@@ -21,9 +21,9 @@
     <logger name="repository" level="DEBUG" />
     <logger name="services" level="DEBUG" />
     <logger name="utils" level="DEBUG" />
-    <logger name="play.api.cache.redis" level="DEBUG" />
+    <logger name="play.api.cache.redis" level="INFO" />
 
-    <root level="WARN">
+    <root level="DEBUG">
         <appender-ref ref="ASYNCSTDOUT" />
     </root>
 

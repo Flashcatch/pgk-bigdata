@@ -34,6 +34,34 @@ public final class Constants {
         " where gse.grouping_set_id = gs.grouping_set_id" +
         "   and al.attribute_list_id = gse.attribute_list_id";
 
+    public static final String SICALCULATION_QUERY = "select grouping_set_id," +
+            "  year_month," +
+            "  snd_cn_id ," +
+            "  rsv_cn_id ," +
+            "  snd_dp_id ," +
+            "  rsv_dp_id ," +
+            "  snd_rw_id ," +
+            "  rsv_rw_id ," +
+            "  snd_st_id ," +
+            "  rsv_st_id ," +
+            "  snd_org_id ," +
+            "  rsv_org_id ," +
+            "  fr_id ," +
+            "  fr_group_id ," +
+            "  isload ," +
+            "  rod_id ," +
+            "  send_kind_id ," +
+            "  park_sign ," +
+            "  route_send_sign ," +
+            "  model_property_id ," +
+            "  st_id ," +
+            "  client_id ," +
+            "  vid_podgotovki ," +
+            "  vid_zabrakovki ," +
+            "  is_tech_st ," +
+            "  agg_median" +
+            "  from " + TABLE_PREFIX + "si_calculation c";
+
     public static final String STATIONS = "select s.station_id" +
         "     , s.rw_id" +
         "     , s.dp_id" +
@@ -43,33 +71,6 @@ public final class Constants {
     public static final String FREIGHTS = "select f.key, f.fr_group" +
         "  from " + TABLE_PREFIX + "freight f";
 
-    public static final String SICALCULATION_QUERY = "select grouping_set_id," +
-        "  year_month," +
-        "  snd_cn_id ," +
-        "  rsv_cn_id ," +
-        "  snd_dp_id ," +
-        "  rsv_dp_id ," +
-        "  snd_rw_id ," +
-        "  rsv_rw_id ," +
-        "  snd_st_id ," +
-        "  rsv_st_id ," +
-        "  snd_org_id ," +
-        "  rsv_org_id ," +
-        "  fr_id ," +
-        "  fr_group_id ," +
-        "  isload ," +
-        "  rod_id ," +
-        "  send_kind_id ," +
-        "  park_sign ," +
-        "  route_send_sign ," +
-        "  model_property_id ," +
-        "  st_id ," +
-        "  client_id ," +
-        "  vid_podgotovki ," +
-        "  vid_zabrakovki ," +
-        "  is_tech_st ," +
-        "  agg_median" +
-        "  from " + TABLE_PREFIX + "si_calculation c";
 
     /*"select st.DP_ID from ml.ws_station st"
             + " where st.station_id = ?"

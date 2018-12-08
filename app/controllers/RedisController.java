@@ -89,6 +89,7 @@ public class RedisController extends Controller {
             value = "Тело запроса"
         )
     })
+    @SuppressWarnings("unchecked")
     public CompletionStage<Result> getDataUsingImpala() {
         log.debug("<< getDataUsingImpala < start, now:{}", now());
 
@@ -101,8 +102,8 @@ public class RedisController extends Controller {
         try (Connection connection = ds.getConnection()) {
 
             // По ключу grsets получаем grouping_set_id, и уровень метрики
-            List<GroupingSets> groupingSetsList = getGroupingSets(connection, false)
-                .toCompletableFuture().join();
+            List<GroupingSets> groupingSetsList = (List<GroupingSets>)asyncCacheApi.get("grsets")
+                    .toCompletableFuture().join();
 
             log.debug("<< getDataUsingImpala < Processing request data");
             JsonNode json = request().body().asJson();
@@ -198,7 +199,7 @@ public class RedisController extends Controller {
 
                 }
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
-                    .id(groupingSetId)
+                    .id(params.getId())
                     .duration(duration)
                     .sndStId(params.getSndStId())
                     .rodId(params.getRodId())
@@ -644,7 +645,7 @@ public class RedisController extends Controller {
 
     /**
      * getting attribute list
-     * @param connection
+     * @param connection connection
      * @param refresh
      * @param logs
      * @return CP List of attributes
