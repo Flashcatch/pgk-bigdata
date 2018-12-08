@@ -11,6 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@SuppressWarnings("serial")
 public class GroupingSets implements Serializable {
 
     long statIndicatorId;

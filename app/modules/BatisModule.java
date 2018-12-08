@@ -1,7 +1,7 @@
 package modules;
 
 import com.google.inject.name.Names;
-import mappers.HomeMapper;
+import mappers.BigDataMapper;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import play.db.Database;
 import utils.LocalDateTimeHandler;
@@ -17,16 +17,10 @@ public class BatisModule extends org.mybatis.guice.MyBatisModule {
     protected void initialize() {
         environmentId("development");
         bindConstant().annotatedWith(
-                Names.named("mybatis.configuration.failFast")).
-                to(true);
+                Names.named("mybatis.configuration.failFast")).to(true);
         bindDataSourceProviderType(PlayDataSourceProvider.class); // это подключение датасорса, который заинжектен play-ем
         bindTransactionFactoryType(JdbcTransactionFactory.class);
-
-        // Подключение пакета с мапперами
-        addMapperClasses(HomeMapper.class.getPackage().getName());
-
-        // Подключение отдельного маппера
-//        addMapperClass(RateMapper.class);
+        addMapperClass(BigDataMapper.class);
 
         // подключение Temporal handler-ов
         addTypeHandlerClasses(LocalDateTimeHandler.class.getPackage().getName());

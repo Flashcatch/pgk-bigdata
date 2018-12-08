@@ -57,7 +57,7 @@ public class BigDataController extends Controller {
     @Inject
     public BigDataController(AsyncCacheApi asyncCacheApi,
                              BigDataService bigDataService,
-                             @NamedDatabase("metrix") Database db,
+                             @NamedDatabase("default") Database db,
                              ActorSystem actorSystem,
                              ExecutionContext executionContext) {
         this.asyncCacheApi = asyncCacheApi;

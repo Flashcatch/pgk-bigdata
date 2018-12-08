@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@SuppressWarnings("serial")
 public class Freights implements Serializable {
 
     private Long key;

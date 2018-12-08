@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
+@SuppressWarnings("serial")
 public class AttributeList implements Serializable {
 
     private long groupingSetId;

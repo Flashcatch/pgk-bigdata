@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@SuppressWarnings("serial")
 public class Stations implements Serializable {
 
     private Long stationId;

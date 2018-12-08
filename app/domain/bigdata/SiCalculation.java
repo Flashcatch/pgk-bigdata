@@ -16,6 +16,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@SuppressWarnings("serial")
 public class SiCalculation implements Serializable {
 
     private Long groupingSetId;
