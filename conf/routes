@@ -1,0 +1,16 @@
+GET           /docs/                                                controllers.Assets.at(path="/public/swagger-ui",file="index.html")
+GET           /docs/swagger.json                                    controllers.ApiHelpController.getResources
+GET           /docs/*file                                           controllers.Assets.at(path="/public/swagger-ui",file)
+
+GET           /v1/impala/reload                                     controllers.RedisController.reloadKuduToRedis
+POST          /v1/impala                                            controllers.RedisController.getDataUsingImpala
+GET           /caches/:key                                          controllers.RedisController.get(key: String)
+POST          /caches/:key                                          controllers.RedisController.set(key: String)
+DELETE        /caches/:key                                          controllers.RedisController.remove(key:String)
+
+GET           /v1/bigdata/query/:id/id                              controllers.BigDataController.getBigDataQueryById(id: Long)
+GET           /v1/kudu                                              controllers.BigDataController.kuduDirect
+GET           /v1/kudu/cached                                       controllers.BigDataController.kuduCached
+GET           /v1/bigdata/queries                                   controllers.BigDataController.getBigDataQueries
+GET           /v1/bigdata/query/:key/key                            controllers.BigDataController.getBigDataQueryByKey(key: String)
+GET           /v1/postresql/reload                                  controllers.BigDataController.kuduToPostgreSQL

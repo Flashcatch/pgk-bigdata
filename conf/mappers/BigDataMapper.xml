@@ -1,0 +1,58 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.BigDataMapper">
+
+    <resultMap id="queriesMap" type="domain.bigdata.BigDataQueriesEntity">
+        <id property="id" column="query_id"/>
+        <result property="query" column="query_body"/>
+        <result property="queryKey" column="query_key"/>
+    </resultMap>
+
+    <sql id="queryCols">
+        ${query_alias}.id as query_id,
+        ${query_alias}.query_key as query_key,
+        ${query_alias}.query as query_body
+
+    </sql>
+
+    <select id="selectAllQueries" resultMap="queriesMap">
+        SELECT
+        <include refid="queryCols">
+            <property name="query_alias" value="i"/>
+        </include>
+        FROM  big_data_queries i
+
+    </select>
+
+    <select id="selectQueryById" resultMap="queriesMap">
+        SELECT
+        <include refid="queryCols">
+            <property name="query_alias" value="i"/>
+        </include>
+        FROM  big_data_queries i
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectQueryByKey" resultMap="queriesMap">
+        SELECT
+        <include refid="queryCols">
+            <property name="query_alias" value="i"/>
+        </include>
+        FROM  big_data_queries i
+        WHERE query_key = #{key}
+    </select>
+
+    <insert id="insertQuery" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO big_data_queries (
+                side_id,
+                check_list_id,
+                is_passed,
+                comment
+                )
+        VALUES (
+                       #{inspectionSide.id},
+                       #{checklistSide.id},
+                       #{passed},
+                       #{comment}
+    </insert>
+
+</mapper>

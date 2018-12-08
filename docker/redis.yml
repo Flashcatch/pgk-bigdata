@@ -1,0 +1,15 @@
+version: '2'
+services:
+  redis:
+    image: redis:alpine
+    hostname: redis
+    environment:
+    - ALLOW_EMPTY_PASSWORD=yes
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+    - ./redis.conf:/usr/local/etc/redis/redis.conf
+    - ./data:/data
+    ports:
+    - 6379:6379
+    expose:
+    - 6379
