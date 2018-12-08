@@ -1,0 +1,16 @@
+version: '2'
+services:
+  pgk-bigdata:
+    image: pgk-bigdata:1.0
+    ports:
+    - 9003:9000
+    expose:
+    - 9003
+    environment:
+    - REDIS_URL=192.168.100.65
+    links:
+    - redis:redis
+  redis:
+    extends:
+      file: redis.yml
+      service: redis
