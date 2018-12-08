@@ -12,7 +12,7 @@
     </appender>
 
     <logger name="play" level="INFO" />
-    <logger name="akka" level="DEBUG" />
+    <logger name="akka" level="INFO" />
     <logger name="controllers" level="DEBUG" />
     <logger name="domain" level="DEBUG" />
     <logger name="dto" level="DEBUG" />

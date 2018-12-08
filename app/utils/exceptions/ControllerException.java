@@ -9,6 +9,7 @@ import java.util.Map;
 /**
  * @author SandQ
  */
+@SuppressWarnings("serial")
 public abstract class ControllerException extends RuntimeException {
 
     private final Errors errors;
