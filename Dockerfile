@@ -2,8 +2,9 @@
 FROM ingensi/play-framework:latest
 MAINTAINER  sandquattro sandquattro@gmail.com
 # Создать директорию app
-WORKDIR /app
+WORKDIR /pgk-bigdata
 # Скопировать исходники в app
-COPY . /app
+COPY . /pgk-bigdata
 EXPOSE 9000
-RUN ["activator", "run"]
+#Запускать можно и вручную
+#RUN ["activator", "run"]
