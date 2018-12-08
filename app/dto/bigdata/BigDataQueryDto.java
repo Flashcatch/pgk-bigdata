@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * BigDataQueryDto.
+ * @author SandQ
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

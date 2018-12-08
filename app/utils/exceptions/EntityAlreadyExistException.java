@@ -3,19 +3,16 @@ package utils.exceptions;
 import utils.entity.Errors;
 
 /**
- * Created by Pavel Dudin on 29.09.2017 padudin@dasreda.ru
+ * @author SandQ
  */
-public class EntityAlreadyExistException extends ControllerException {
-
-    private EntityAlreadyExistException(String message, String jsonMessage) {
-        super(message, jsonMessage);
-    }
+public final class EntityAlreadyExistException extends ControllerException {
 
     private EntityAlreadyExistException(String message, Errors errors) {
         super(message, errors);
     }
 
     /**
+     * createSlugExist.
      * future json format:
      * <pre>
      * {
@@ -24,30 +21,13 @@ public class EntityAlreadyExistException extends ControllerException {
      *   ]
      * }
      * </pre>
-     * @param slug
-     * @return
+     *
+     * @param slug slug
+     * @return EntityAlreadyExistException
      */
     public static EntityAlreadyExistException createSlugExist(String slug) {
         return new EntityAlreadyExistException(
-                "Entity with slug " + slug + " already exists",
-                Errors.create("slug", "Сущность с данным slug уже существует"));
-    }
-
-    /**
-     * future json format:
-     * <pre>
-     * {
-     *   "errors": [
-     *      { "entity": "Сущность entity уже существует" }
-     *   ]
-     * }
-     * </pre>
-     * @param entity
-     * @return
-     */
-    public static EntityAlreadyExistException createEntityExist(String entity) {
-        return new EntityAlreadyExistException(
-                "Entity: " + entity + " already exists",
-                Errors.create("entity", "Сущность " + entity + "уже существует"));
+            "Entity with slug " + slug + " already exists",
+            Errors.create("slug", "Сущность с данным slug уже существует"));
     }
 }

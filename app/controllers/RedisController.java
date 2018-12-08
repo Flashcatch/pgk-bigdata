@@ -6,10 +6,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.inject.Inject;
-import domain.bigdata.*;
+import domain.bigdata.AttributeList;
+import domain.bigdata.BigDataQueryResponse;
+import domain.bigdata.BigDataQueryResponseList;
+import domain.bigdata.Freights;
+import domain.bigdata.GroupingSets;
+import domain.bigdata.SiCalculation;
+import domain.bigdata.Stations;
 import dto.bigdata.BigDataQueryDto;
 import dto.bigdata.BigDataQueryParamsDto;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import play.cache.AsyncCacheApi;
 import play.cache.NamedCache;
@@ -32,7 +42,13 @@ import java.util.stream.Collectors;
 import static java.time.LocalDateTime.now;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static utils.Constants.*;
+import static utils.Constants.ABSENT_METRIX;
+import static utils.Constants.ATTRIBUTE_LIST;
+import static utils.Constants.FREIGHTS;
+import static utils.Constants.GROUPING_SET;
+import static utils.Constants.NTH_LINE;
+import static utils.Constants.SICALCULATION_QUERY;
+import static utils.Constants.STATIONS;
 
 /**
  * This controller contains an action to handle HTTP requests to the application's home page.
@@ -62,16 +78,16 @@ public class RedisController extends Controller {
     /**
      * @return CompletionStageResult result
      */
-    @ApiOperation(value = "Получение данных из таблицы si_calculation, используя impala connector",
-            consumes = "application/json",
-            produces = "application/json")
-    @ApiImplicitParams({
-            @ApiImplicitParam(
-                    name = "body",
-                    dataType = "dto.bigdata.BigDataQueryDto",
-                    paramType = "body",
-                    value = "Тело запроса"
-            )
+    @ApiOperation(value = "Получение метрик из si_calculation, используя impala connector",
+        consumes = "application/json",
+        produces = "application/json")
+    @ApiImplicitParams( {
+        @ApiImplicitParam(
+            name = "body",
+            dataType = "dto.bigdata.BigDataQueryDto",
+            paramType = "body",
+            value = "Тело запроса"
+        )
     })
     public CompletionStage<Result> getDataUsingImpala() {
         log.debug("<< getDataUsingImpala < start, now:{}", now());
@@ -86,7 +102,7 @@ public class RedisController extends Controller {
 
             // По ключу grsets получаем grouping_set_id, и уровень метрики
             List<GroupingSets> groupingSetsList = getGroupingSets(connection, false)
-                    .toCompletableFuture().join();
+                .toCompletableFuture().join();
 
             log.debug("<< getDataUsingImpala < Processing request data");
             JsonNode json = request().body().asJson();
@@ -96,7 +112,7 @@ public class RedisController extends Controller {
             log.debug("<< getDataUsingImpala < json parsed,body: {}", body);
 
             List<AttributeList> attributeList = getAttributeList(connection, false, true)
-                    .toCompletableFuture().join();
+                .toCompletableFuture().join();
 
             // Цикл по json данным
             List<BigDataQueryParamsDto> metricsBlanks = body.getMetricsBlanks();
@@ -105,7 +121,7 @@ public class RedisController extends Controller {
             for (BigDataQueryParamsDto params : metricsBlanks) {
 
                 long groupingSetId = -1;
-                long duration = -100;
+                long duration = ABSENT_METRIX;
                 String key;
                 StringBuilder keyBuilder = new StringBuilder();
 
@@ -117,8 +133,8 @@ public class RedisController extends Controller {
                     //TODO: проверять, если меняется уровень, не фильтровать каждый раз
                     final long grSetId = groupingSetId;
                     List<AttributeList> attrs = attributeList.stream()
-                            .filter(data -> data.getGroupingSetId() == grSetId)
-                            .collect(Collectors.toList());
+                        .filter(data -> data.getGroupingSetId() == grSetId)
+                        .collect(Collectors.toList());
 
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
                     keyBuilder = new StringBuilder(key);
@@ -176,20 +192,20 @@ public class RedisController extends Controller {
                     }
                     // Проверяем json на полноту данных
                     duration = asyncCacheApi.get(keyBuilder.toString())
-                            .toCompletableFuture().join() == null ? -100L : (long) asyncCacheApi.get(keyBuilder.toString())
-                            .toCompletableFuture().join();
+                        .toCompletableFuture().join() == null ? ABSENT_METRIX : (long) asyncCacheApi.get(keyBuilder.toString())
+                        .toCompletableFuture().join();
                     if (duration > 0) break;
 
                 }
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
-                        .id(groupingSetId)
-                        .duration(duration)
-                        .sndStId(params.getSndStId())
-                        .rodId(params.getRodId())
-                        .routeSendSign(params.getRouteSendSign())
-                        .build();
-                if (duration == -100) {
-                    bdResponse.setDuration(-100L);
+                    .id(groupingSetId)
+                    .duration(duration)
+                    .sndStId(params.getSndStId())
+                    .rodId(params.getRodId())
+                    .routeSendSign(params.getRouteSendSign())
+                    .build();
+                if (duration == ABSENT_METRIX) {
+                    bdResponse.setDuration(ABSENT_METRIX);
                     bdResponse.setException("duration is null! key=" + keyBuilder.toString());
                 }
                 responseList.add(bdResponse);
@@ -234,9 +250,9 @@ public class RedisController extends Controller {
                 ResultSet resultSet = st.executeQuery();
                 while (resultSet.next()) {
                     stations.add(Stations.builder()
-                            .stationId(resultSet.getLong(1))
-                            .rwId(resultSet.getLong(2))
-                            .dpId(resultSet.getLong(3)).build());
+                        .stationId(resultSet.getLong(1))
+                        .rwId(resultSet.getLong(2))
+                        .dpId(resultSet.getLong(3)).build());
                 }
             } catch (SQLException e) {
                 log.error("stations sql error:{} ", e.getMessage());
@@ -267,9 +283,9 @@ public class RedisController extends Controller {
                 ResultSet resultSet = st.executeQuery();
                 while (resultSet.next()) {
                     freights.add(Freights.builder()
-                            .key(resultSet.getLong(1))
-                            .group(resultSet.getLong(2))
-                            .build());
+                        .key(resultSet.getLong(1))
+                        .group(resultSet.getLong(2))
+                        .build());
                 }
             } catch (SQLException e) {
                 log.error("freights sql error:{} ", e.getMessage());
@@ -284,6 +300,7 @@ public class RedisController extends Controller {
         });
     }
 
+    @SuppressWarnings("checkstyle:MagicNumberCheck")
     private CompletionStage<List<SiCalculation>> getSiCalculation(Connection connection, boolean refresh, GroupingSets groupingSets) {
         log.debug("getting si_calculation with groupingSetId={}, start:{}", groupingSets, now());
         String key = "sicalculation" + groupingSets.getGroupingSetId();
@@ -300,33 +317,33 @@ public class RedisController extends Controller {
                 ResultSet resultSet = st.executeQuery();
                 while (resultSet.next()) {
                     siCalculations.add(SiCalculation.builder()
-                            .groupingSetId(resultSet.getLong(1))
-                            .yearMonth(resultSet.getString(2))
-                            .sndCnId(resultSet.getLong(3))
-                            .rsvCnId(resultSet.getLong(4))
-                            .sndDpId(resultSet.getLong(5))
-                            .rsvDpId(resultSet.getLong(6))
-                            .sndRwId(resultSet.getLong(7))
-                            .rsvRwId(resultSet.getLong(8))
-                            .sndStId(resultSet.getLong(9))
-                            .rsvStId(resultSet.getLong(10))
-                            .sndOrgId(resultSet.getLong(11))
-                            .rsvOrgId(resultSet.getLong(12))
-                            .frId(resultSet.getLong(13))
-                            .frGroupId(resultSet.getLong(14))
-                            .isLoad(resultSet.getLong(15))
-                            .rodId(resultSet.getLong(16))
-                            .sendKindId(resultSet.getLong(17))
-                            .parkSign(resultSet.getLong(18))
-                            .routeSendSign(resultSet.getLong(19))
-                            .modelPropertyId(resultSet.getLong(20))
-                            .stId(resultSet.getLong(21))
-                            .clientId(resultSet.getLong(22))
-                            .vidPodgotovki(resultSet.getString(23))
-                            .vidZabrakovki(resultSet.getLong(24))
-                            .isTechSt(resultSet.getLong(25))
-                            .aggMedian(resultSet.getFloat(26))
-                            .build());
+                        .groupingSetId(resultSet.getLong(1))
+                        .yearMonth(resultSet.getString(2))
+                        .sndCnId(resultSet.getLong(3))
+                        .rsvCnId(resultSet.getLong(4))
+                        .sndDpId(resultSet.getLong(5))
+                        .rsvDpId(resultSet.getLong(6))
+                        .sndRwId(resultSet.getLong(7))
+                        .rsvRwId(resultSet.getLong(8))
+                        .sndStId(resultSet.getLong(9))
+                        .rsvStId(resultSet.getLong(10))
+                        .sndOrgId(resultSet.getLong(11))
+                        .rsvOrgId(resultSet.getLong(12))
+                        .frId(resultSet.getLong(13))
+                        .frGroupId(resultSet.getLong(14))
+                        .isLoad(resultSet.getLong(15))
+                        .rodId(resultSet.getLong(16))
+                        .sendKindId(resultSet.getLong(17))
+                        .parkSign(resultSet.getLong(18))
+                        .routeSendSign(resultSet.getLong(19))
+                        .modelPropertyId(resultSet.getLong(20))
+                        .stId(resultSet.getLong(21))
+                        .clientId(resultSet.getLong(22))
+                        .vidPodgotovki(resultSet.getString(23))
+                        .vidZabrakovki(resultSet.getLong(24))
+                        .isTechSt(resultSet.getLong(25))
+                        .aggMedian(resultSet.getFloat(26))
+                        .build());
                 }
             } catch (SQLException e) {
                 log.error("getSiCalculation sql error:{} ", e.getMessage());
@@ -366,13 +383,13 @@ public class RedisController extends Controller {
      */
     @ApiOperation(value = "set", consumes = "application/json")
     @ApiImplicitParams(
-            {@ApiImplicitParam(
-                    name = "body",
-                    dataType = "String",
-                    required = true,
-                    paramType = "body",
-                    value = "Данные для сохранения в Redis"
-            )}
+        {@ApiImplicitParam(
+            name = "body",
+            dataType = "String",
+            required = true,
+            paramType = "body",
+            value = "Данные для сохранения в Redis"
+        )}
     )
     public CompletionStage<Result> set(@ApiParam(value = "key", required = true) String key) {
         JsonNode value = request().body().asJson();
@@ -404,21 +421,21 @@ public class RedisController extends Controller {
      * @author SandQ
      */
     @ApiOperation(value = "Перегрузить данные из таблиц kudu в redis")
-    @ApiImplicitParams({
-            @ApiImplicitParam(
-                    name = "refresh",
-                    dataType = "boolean",
-                    paramType = "query",
-                    defaultValue = "false",
-                    value = "Полный сброс кеша"
-            ),
-            @ApiImplicitParam(
-                    name = "groupingSetId",
-                    dataType = "int",
-                    paramType = "query",
-                    defaultValue = "0",
-                    value = "Загрузить в реддис si_calculation c указанным срезом. 0 - Грузить все"
-            )
+    @ApiImplicitParams( {
+        @ApiImplicitParam(
+            name = "refresh",
+            dataType = "boolean",
+            paramType = "query",
+            defaultValue = "false",
+            value = "Полный сброс кеша"
+        ),
+        @ApiImplicitParam(
+            name = "groupingSetId",
+            dataType = "int",
+            paramType = "query",
+            defaultValue = "0",
+            value = "Загрузить в реддис si_calculation c указанным срезом. 0 - Грузить все"
+        )
     })
     public Result reloadKuduToRedis() {
 
@@ -435,30 +452,30 @@ public class RedisController extends Controller {
         }
 
         this.actorSystem.scheduler().scheduleOnce(
-                Duration.create(10, TimeUnit.SECONDS), // delay
-                () -> {
+            Duration.create(10, TimeUnit.SECONDS), // delay
+            () -> {
 
-                    log.debug(">> reloadKuduToRedis > Akka scheduler started:{}", now());
+                log.debug(">> reloadKuduToRedis > Akka scheduler started:{}", now());
 
-                    try (Connection connection = ds.getConnection()) {
+                try (Connection connection = ds.getConnection()) {
 
-                        // 1) Грузим stations и frights в кеш
-                        transferStations(connection);
-                        transferFreights(connection);
-                        // 2) Грузим groupingSets
-                        List<GroupingSets> sets = transferGroupingSets(connection);
-                        // 3) Грузим si_calculation
-                        transferSiCalculation(connection, groupingSetId);
+                    // 1) Грузим stations и frights в кеш
+                    transferStations(connection);
+                    transferFreights(connection);
+                    // 2) Грузим groupingSets
+                    List<GroupingSets> sets = transferGroupingSets(connection);
+                    // 3) Грузим si_calculation
+                    transferSiCalculation(connection, groupingSetId);
 
-                    } catch (SQLException e) {
-                        e.iterator()
-                                .forEachRemaining(err -> log.error("<< getDataUsingImpala > error: {}", err.getMessage()));
-                    }
+                } catch (SQLException e) {
+                    e.iterator()
+                        .forEachRemaining(err -> log.error("<< getDataUsingImpala > error: {}", err.getMessage()));
+                }
 
-                    log.debug(">> reloadKuduToRedis > end:{}", now());
+                log.debug(">> reloadKuduToRedis > end:{}", now());
 
-                },
-                this.executionContext);
+            },
+            this.executionContext);
 
         return ok("reload job started");
     }
@@ -514,10 +531,10 @@ public class RedisController extends Controller {
              ResultSet rs = st.executeQuery()) {
             while (rs.next()) {
                 GroupingSets s = GroupingSets.builder()
-                        .statIndicatorId(rs.getLong(1))
-                        .groupingSetId(rs.getLong(2))
-                        .level(rs.getLong(3))
-                        .build();
+                    .statIndicatorId(rs.getLong(1))
+                    .groupingSetId(rs.getLong(2))
+                    .level(rs.getLong(3))
+                    .build();
                 sets.add(s);
             }
             asyncCacheApi.set(key, sets);
@@ -534,17 +551,17 @@ public class RedisController extends Controller {
         log.debug("transferring Si Calculation , start:{}", now());
 
         final String key = "sicalculation";
-        int nthLine = 500000; // print every 500000th line
+        int nthLine = NTH_LINE; // print every n-th line
         int counter = 0;
 
         try (PreparedStatement st = connection.prepareStatement(groupingSetIdGlb == 0 ?
-                SICALCULATION_QUERY : SICALCULATION_QUERY + " where grouping_set_id = " + groupingSetIdGlb);
+            SICALCULATION_QUERY : SICALCULATION_QUERY + " where grouping_set_id = " + groupingSetIdGlb);
              ResultSet rs = st.executeQuery()) {
 
             String k;
             List<AttributeList> attributeList = getAttributeList(connection, true, false)
-                    .toCompletableFuture()
-                    .join();
+                .toCompletableFuture()
+                .join();
 
             while (rs.next()) {
 
@@ -556,8 +573,8 @@ public class RedisController extends Controller {
                 // Таблицы si_grouping_set_elem и таблица attribute_list
 
                 List<AttributeList> attrs = attributeList.stream()
-                        .filter(data -> data.getGroupingSetId() == groupingSetId)
-                        .collect(Collectors.toList());
+                    .filter(data -> data.getGroupingSetId() == groupingSetId)
+                    .collect(Collectors.toList());
 
                 StringBuilder keyBuilder = new StringBuilder(k);
                 for (AttributeList attrList : attrs) {
@@ -625,6 +642,13 @@ public class RedisController extends Controller {
         log.debug("transferring SiCalculation to cache, end:{}, total rows processed:{}", now(), counter);
     }
 
+    /**
+     * getting attribute list
+     * @param connection
+     * @param refresh
+     * @param logs
+     * @return CP List of attributes
+     */
     public CompletionStage<List<AttributeList>> getAttributeList(Connection connection, boolean refresh, boolean logs) {
         if (logs) {
             log.debug("getting AttributeList , start:{}", now());
@@ -645,9 +669,9 @@ public class RedisController extends Controller {
 
                 while (rs.next()) {
                     attributeList.add(AttributeList.builder()
-                            .groupingSetId(rs.getLong(1))
-                            .sqlCalcName(rs.getString(2))
-                            .build());
+                        .groupingSetId(rs.getLong(1))
+                        .sqlCalcName(rs.getString(2))
+                        .build());
                 }
             } catch (SQLException e) {
                 log.error("getAttributeList query exec error:{} ", e.getMessage());

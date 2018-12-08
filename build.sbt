@@ -8,7 +8,7 @@ javacOptions ++= Seq("-Xlint:all")
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 resolvers += "jitpack" at "https://jitpack.io"
-resolvers += Resolver.sonatypeRepo("snapshots")
+resolvers += Resolver.mavenLocal
 
 scalaVersion := "2.12.2"
 
@@ -39,10 +39,15 @@ libraryDependencies ++= Seq(
   "com.google.inject.extensions" % "guice-multibindings" % "4.1.0"
 )
 
-//checkstyleConfigLocation := CheckstyleConfigLocation.URL("https://raw.githubusercontent.com/checkstyle/checkstyle/master/config/checkstyle_checks.xml")
+// checkstyle settings
+checkstyleSeverityLevel := Some(CheckstyleSeverityLevel.Error)
 checkstyleConfigLocation := CheckstyleConfigLocation.File("checkstyle/checkstyle.xml")
-(checkstyle in Compile) := (checkstyle in Compile).triggeredBy(compile in Compile).value
-//checkstyleSeverityLevel := Some(CheckstyleSeverityLevel.Warning)
+checkstyleXsltTransformations := {
+  Some(Set(
+    CheckstyleXSLTSettings(baseDirectory(_ / "checkstyle/styles.xsl").value, target(_ / "checkstyle-report.html").value)
+  ))
+}
+//(checkstyle in Compile) := (checkstyle in Compile).triggeredBy(compile in Compile).value
 
 updateOptions := updateOptions.value.withCachedResolution(true)
 routesGenerator := InjectedRoutesGenerator

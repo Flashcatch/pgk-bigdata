@@ -1,17 +1,8 @@
-<xsl:stylesheet	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="html" indent="yes"/>
-    <xsl:decimal-format decimal-separator="." grouping-separator="," />
+    <xsl:decimal-format decimal-separator="." grouping-separator=","/>
 
-    <!-- Checkstyle XML Style Sheet by Stephane Bailliez <sbailliez@apache.org>         -->
-    <!-- Part of the Checkstyle distribution found at http://checkstyle.sourceforge.net -->
-    <!-- Usage (generates checkstyle_report.html):                                      -->
-    <!--    <checkstyle failonviolation="false" config="${check.config}">               -->
-    <!--      <fileset dir="${src.dir}" includes="**/*.java"/>                          -->
-    <!--      <formatter type="xml" toFile="${doc.dir}/checkstyle_report.xml"/>         -->
-    <!--    </checkstyle>                                                               -->
-    <!--    <style basedir="${doc.dir}" destdir="${doc.dir}"                            -->
-    <!--            includes="checkstyle_report.xml"                                    -->
-    <!--            style="${doc.dir}/checkstyle-noframes.xsl"/>                        -->
+    <xsl:key name="files" match="file" use="@name"/>
 
     <xsl:template match="checkstyle">
         <html>
@@ -78,10 +69,15 @@
                             <img src="http://jakarta.apache.org/images/jakarta-logo.gif" alt="http://jakarta.apache.org" align="left" border="0"/>
                             </a-->
                         </td>
-                        <td class="text-align:right"><h2>CheckStyle Audit</h2></td>
+                        <td class="text-align:right">
+                            <h2>CheckStyle Audit</h2>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="text-align:right">Designed for use with <a href='http://checkstyle.sourceforge.net/'>CheckStyle</a>.</td>
+                        <td class="text-align:right">Designed for use with
+                            <a href='http://checkstyle.sourceforge.net/'>CheckStyle</a>
+                            and<a href='http://jakarta.apache.org'>Ant</a>.
+                        </td>
                     </tr>
                 </table>
                 <hr size="1"/>
@@ -95,19 +91,15 @@
                 <hr size="1" width="100%" align="left"/>
 
                 <!-- For each package create its part -->
-                <xsl:for-each select="file">
-                    <xsl:sort select="@name"/>
-                    <xsl:apply-templates select="."/>
-                    <p/>
-                    <p/>
-                </xsl:for-each>
+                <xsl:apply-templates
+                        select="file[@name and generate-id(.) = generate-id(key('files', @name))]"/>
+
                 <hr size="1" width="100%" align="left"/>
 
 
             </body>
         </html>
     </xsl:template>
-
 
 
     <xsl:template match="checkstyle" mode="filelist">
@@ -117,13 +109,20 @@
                 <th>Name</th>
                 <th>Errors</th>
             </tr>
-            <xsl:for-each select="file">
-                <xsl:sort select="@name"/>
-                <xsl:variable name="errorCount" select="count(error)"/>
+            <xsl:for-each select="file[@name and generate-id(.) = generate-id(key('files', @name))]">
+                <xsl:sort data-type="number" order="descending" select="count(key('files', @name)/error)"/>
+                <xsl:variable name="currentName" select="@name"/>
+                <xsl:variable name="errorCount" select="count(key('files', @name)/error)"/>
                 <tr>
                     <xsl:call-template name="alternated-row"/>
-                    <td><a href="#f-{@name}"><xsl:value-of select="@name"/></a></td>
-                    <td><xsl:value-of select="$errorCount"/></td>
+                    <td>
+                        <a href="#f-{@name}">
+                            <xsl:value-of select="@name"/>
+                        </a>
+                    </td>
+                    <td>
+                        <xsl:value-of select="$errorCount"/>
+                    </td>
                 </tr>
             </xsl:for-each>
         </table>
@@ -132,18 +131,25 @@
 
     <xsl:template match="file">
         <a name="f-{@name}"></a>
-        <h3>File <xsl:value-of select="@name"/></h3>
+        <h3>File
+            <xsl:value-of select="@name"/>
+        </h3>
 
         <table class="log" border="0" cellpadding="5" cellspacing="2" width="100%">
             <tr>
                 <th>Error Description</th>
                 <th>Line</th>
             </tr>
-            <xsl:for-each select="error">
+            <xsl:for-each select="key('files', @name)/error">
+                <xsl:sort data-type="number" order="ascending" select="@line"/>
                 <tr>
                     <xsl:call-template name="alternated-row"/>
-                    <td><xsl:value-of select="@message"/></td>
-                    <td><xsl:value-of select="@line"/></td>
+                    <td>
+                        <xsl:value-of select="@message"/>
+                    </td>
+                    <td>
+                        <xsl:value-of select="@line"/>
+                    </td>
                 </tr>
             </xsl:for-each>
         </table>
@@ -153,7 +159,8 @@
 
     <xsl:template match="checkstyle" mode="summary">
         <h3>Summary</h3>
-        <xsl:variable name="fileCount" select="count(file)"/>
+        <xsl:variable name="fileCount"
+                      select="count(file[@name and generate-id(.) = generate-id(key('files', @name))])"/>
         <xsl:variable name="errorCount" select="count(file/error)"/>
         <table class="log" border="0" cellpadding="5" cellspacing="2" width="100%">
             <tr>
@@ -162,8 +169,12 @@
             </tr>
             <tr>
                 <xsl:call-template name="alternated-row"/>
-                <td><xsl:value-of select="$fileCount"/></td>
-                <td><xsl:value-of select="$errorCount"/></td>
+                <td>
+                    <xsl:value-of select="$fileCount"/>
+                </td>
+                <td>
+                    <xsl:value-of select="$errorCount"/>
+                </td>
             </tr>
         </table>
     </xsl:template>
@@ -175,3 +186,4 @@
         </xsl:attribute>
     </xsl:template>
 </xsl:stylesheet>
+

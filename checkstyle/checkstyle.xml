@@ -1,10 +1,16 @@
 <?xml version="1.0"?>
-<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN" "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
     <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java, properties, xml"/>
+    <module name="SuppressionFilter">
+        <property name="file" value="checkstyle/suppression.xml"/>
+    </module>
 
-    <module name="SuppressWarningsFilter" />
+    <module name="SuppressWarningsFilter"/>
 
     <module name="TreeWalker">
         <property name="tabWidth" value="4"/>
@@ -19,7 +25,7 @@
         <!-- See http://checkstyle.sourceforge.net/config_annotation.html#AnnotationUseStyle#PackageAnnotation -->
         <module name="PackageAnnotation"/>
         <!-- See http://checkstyle.sourceforge.net/config_annotation.html#AnnotationUseStyle#SuppressWarningsHolder -->
-        <module name="SuppressWarningsHolder" />
+        <module name="SuppressWarningsHolder"/>
         <!-- See http://checkstyle.sourceforge.net/config_annotation.html#AnnotationUseStyle#AnnotationLocation -->
         <module name="AnnotationLocation">
             <property name="allowSamelineMultipleAnnotations" value="false"/>
@@ -88,7 +94,8 @@
         <module name="InnerAssignment"/>
         <!-- See http://checkstyle.sourceforge.net/config_coding.html#HiddenField#MagicNumber -->
         <module name="MagicNumber">
-            <property name="ignoreNumbers" value="-4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 24, 31, 32, 60, 64, 100, 128, 256, 512, 1000, 1024"/>
+            <property name="ignoreNumbers"
+                      value="-4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 24, 31, 32, 60, 64, 100, 128, 256, 512, 1000, 1024"/>
             <property name="ignoreHashCodeMethod" value="true"/>
             <property name="ignoreAnnotation" value="true"/>
         </module>
@@ -163,7 +170,7 @@
             <property name="allowMissingPropertyJavadoc" value="true"/>
             <property name="allowMissingThrowsTags" value="true"/>
             <property name="tokens" value="METHOD_DEF"/>
-            <property name="ignoreMethodNamesRegex" value="with.*" />
+            <property name="ignoreMethodNamesRegex" value="with.*"/>
         </module>
         <!-- See http://checkstyle.sourceforge.net/config_javadoc.html#JavadocStyle -->
         <module name="JavadocStyle"/>
@@ -204,7 +211,7 @@
         <module name="ConstantName"/>
         <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
-        <module name="MemberName" />
+        <module name="MemberName"/>
         <module name="MethodName"/>
         <module name="MethodTypeParameterName">
             <property name="format" value="^[A-Z]+[0-9]?$"/>
@@ -224,7 +231,7 @@
         </module>
         <!-- See http://checkstyle.sourceforge.net/config_sizes.html#LineLength -->
         <module name="LineLength">
-            <property name="max" value="140" />
+            <property name="max" value="140"/>
             <property name="ignorePattern" value="@version|@see|@todo|TODO"/>
         </module>
         <!-- See http://checkstyle.sourceforge.net/config_sizes.html#AnonInnerLength -->
@@ -271,7 +278,8 @@
         <!-- See http://checkstyle.sourceforge.net/config_whitespace.html#EmptyLineSeparator -->
         <module name="EmptyLineSeparator">
             <property name="allowNoEmptyLineBetweenFields" value="true"/>
-            <property name="tokens" value="IMPORT, CLASS_DEF, INTERFACE_DEF, ENUM_DEF, STATIC_INIT, INSTANCE_INIT, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
+            <property name="tokens"
+                      value="IMPORT, CLASS_DEF, INTERFACE_DEF, ENUM_DEF, STATIC_INIT, INSTANCE_INIT, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
         </module>
         <!-- See http://checkstyle.sourceforge.net/config_whitespace.html#SeparatorWrap -->
         <module name="SeparatorWrap">

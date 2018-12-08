@@ -7,13 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Pavel Dudin
- * on 11.10.2017
- * padudin@dasreda.ru
+ * @author SandQ
  */
 public abstract class ControllerException extends RuntimeException {
 
-    private Errors errors;
+    private final Errors errors;
 
     protected ControllerException(String message) {
         super(message);
@@ -45,7 +43,6 @@ public abstract class ControllerException extends RuntimeException {
     public Errors getErrors() {
         return errors;
     }
-
 
     @Override
     public boolean equals(Object o) {
