@@ -12,12 +12,16 @@
     </appender>
 
     <logger name="play" level="INFO" />
+    <logger name="akka" level="DEBUG" />
     <logger name="controllers" level="DEBUG" />
-    <logger name="dao" level="DEBUG" />
-    <logger name="utils" level="DEBUG" />
-    <logger name="model" level="DEBUG" />
-    <logger name="services" level="DEBUG" />
+    <logger name="domain" level="DEBUG" />
+    <logger name="dto" level="DEBUG" />
     <logger name="mappers" level="DEBUG"/>
+    <logger name="modules" level="DEBUG"/>
+    <logger name="repository" level="DEBUG" />
+    <logger name="services" level="DEBUG" />
+    <logger name="utils" level="DEBUG" />
+    <logger name="play.api.cache.redis" level="DEBUG" />
 
     <root level="WARN">
         <appender-ref ref="ASYNCSTDOUT" />

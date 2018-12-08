@@ -5,6 +5,7 @@ import utils.entity.Errors;
 /**
  * @author SandQ
  */
+@SuppressWarnings("serializable")
 public final class EntityAlreadyExistException extends ControllerException {
 
     private EntityAlreadyExistException(String message, Errors errors) {
