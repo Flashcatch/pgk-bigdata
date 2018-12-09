@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class BigDataQueryResponse {
 
-    private Long id;
+    private Integer id;
     private Long duration;
     @JsonProperty("snd_st_id")
     private Integer sndStId;
