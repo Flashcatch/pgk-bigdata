@@ -7,5 +7,5 @@ WORKDIR /pgk-bigdata
 # Скопировать исходники в app
 COPY . /pgk-bigdata
 RUN apt-get update
-RUN apt-get install git
+RUN apt-get install -y git
 EXPOSE 9000
