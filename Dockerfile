@@ -6,4 +6,6 @@ ENV REDIS_URL="192.168.100.65"
 WORKDIR /pgk-bigdata
 # Скопировать исходники в app
 COPY . /pgk-bigdata
+RUN apt-get update
+RUN apt-get install git
 EXPOSE 9000
