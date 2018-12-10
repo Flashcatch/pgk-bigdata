@@ -3,10 +3,10 @@ GET           /docs/swagger.json                                    controllers.
 GET           /docs/*file                                           controllers.Assets.at(path="/public/swagger-ui",file)
 
 GET           /v1/impala/reload                                     controllers.RedisController.reloadKuduToRedis
-POST          /v1/impala                                            controllers.RedisController.getDataUsingImpala
-GET           /caches/:key                                          controllers.RedisController.get(key: String)
-POST          /caches/:key                                          controllers.RedisController.set(key: String)
-DELETE        /caches/:key                                          controllers.RedisController.remove(key:String)
+POST          /v1/redis/sicalculation                               controllers.RedisController.getSiCalculationRedis
+GET           /v1/redis/:key                                        controllers.RedisController.get(key: String)
+POST          /v1/redis/:key                                        controllers.RedisController.set(key: String)
+DELETE        /v1/redis/:key                                        controllers.RedisController.remove(key:String)
 
 GET           /v1/bigdata/query/:id/id                              controllers.BigDataController.getBigDataQueryById(id: Long)
 GET           /v1/kudu                                              controllers.BigDataController.kuduDirect

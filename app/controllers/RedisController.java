@@ -78,10 +78,10 @@ public class RedisController extends Controller {
     /**
      * @return CompletionStageResult result
      */
-    @ApiOperation(value = "Получение метрик из si_calculation, используя impala connector",
+    @ApiOperation(value = "Получение метрик из si_calculation, используя redis",
         consumes = "application/json",
         produces = "application/json")
-    @ApiImplicitParams( {
+    @ApiImplicitParams({
         @ApiImplicitParam(
             name = "body",
             dataType = "dto.bigdata.BigDataQueryDto",
@@ -90,8 +90,8 @@ public class RedisController extends Controller {
         )
     })
     @SuppressWarnings("unchecked")
-    public CompletionStage<Result> getDataUsingImpala() {
-        log.debug("<< getDataUsingImpala < start, now:{}", now());
+    public CompletionStage<Result> getSiCalculationRedis() {
+        log.debug("<< getSiCalculationRedis < start, now:{}", now());
 
         BigDataQueryResponseList response = new BigDataQueryResponseList();
         List<BigDataQueryResponse> responseList = new ArrayList<>();
@@ -105,12 +105,12 @@ public class RedisController extends Controller {
             List<GroupingSets> groupingSetsList = (List<GroupingSets>) asyncCacheApi.get("grsets")
                 .toCompletableFuture().join();
 
-            log.debug("<< getDataUsingImpala < Processing request data");
+            log.debug("<< getSiCalculationRedis < Processing request data");
             JsonNode json = request().body().asJson();
-            log.debug("<< getDataUsingImpala < json: {}", json);
+            log.debug("<< getSiCalculationRedis < json: {}", json);
 
             BigDataQueryDto body = Json.fromJson(json, BigDataQueryDto.class);
-            log.debug("<< getDataUsingImpala < json parsed,body: {}", body);
+            log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
 
             List<AttributeList> attributeList = getAttributeList(connection, false, true)
                 .toCompletableFuture().join();
@@ -222,7 +222,7 @@ public class RedisController extends Controller {
             log.error("getStatIndicators sql error:{} ", e.getMessage());
         }
         response.setMetrics(responseList);
-        log.debug("<< getDataUsingImpala < end, now:{}", now());
+        log.debug("<< getSiCalculationRedis < end, now:{}", now());
         return completedFuture(ok(Json.toJson(response)));
     }
 
@@ -269,7 +269,7 @@ public class RedisController extends Controller {
             return stations;
         })).thenApply(res -> {
             log.debug("getting stations, end:{}", now());
-            log.debug("<< getDataUsingImpala < stations populated, size:{}", res.size());
+            log.debug("<< getSiCalculationRedis < stations populated, size:{}", res.size());
             return res;
         });
     }
@@ -302,13 +302,13 @@ public class RedisController extends Controller {
             return freights;
         })).thenApply(res -> {
             log.debug("getting freights, end:{}", now());
-            log.debug("<< getDataUsingImpala < freights populated, size:{}", res.size());
+            log.debug("<< getSiCalculationRedis < freights populated, size:{}", res.size());
             return res;
         });
     }
 
     @SuppressWarnings("checkstyle:MagicNumberCheck")
-    private CompletionStage<List<SiCalculation>> getSiCalculation(Connection connection, boolean refresh, GroupingSets groupingSets) {
+    private CompletionStage<List<SiCalculation>> getSiCalculationRedis(Connection connection, boolean refresh, GroupingSets groupingSets) {
         log.debug("getting si_calculation with groupingSetId={}, start:{}", groupingSets, now());
         String key = "sicalculation" + groupingSets.getGroupingSetId();
 
@@ -353,14 +353,14 @@ public class RedisController extends Controller {
                         .build());
                 }
             } catch (SQLException e) {
-                log.error("getSiCalculation sql error:{} ", e.getMessage());
+                log.error("getSiCalculationRedis sql error:{} ", e.getMessage());
                 asyncCacheApi.remove(key);
             }
             log.debug("transferring SiCalculation to cache, end:{}", now());
             return siCalculations;
         })).thenApply(res -> {
             log.debug("getting si_calculation with groupingSetId={}, end:{}", groupingSets.getGroupingSetId(), now());
-            log.debug("<< getDataUsingImpala < SiCalculation populated, size:{}", res.size());
+            log.debug("<< getSiCalculationRedis < SiCalculation populated, size:{}", res.size());
             return res;
         });
     }
@@ -476,7 +476,7 @@ public class RedisController extends Controller {
 
                 } catch (SQLException e) {
                     e.iterator()
-                        .forEachRemaining(err -> log.error("<< getDataUsingImpala > error: {}", err.getMessage()));
+                        .forEachRemaining(err -> log.error("<< getSiCalculationRedis > error: {}", err.getMessage()));
                 }
 
                 log.debug(">> reloadKuduToRedis > end:{}", now());
@@ -650,11 +650,11 @@ public class RedisController extends Controller {
     }
 
     /**
-     * getting attribute list
+     * getting attribute list.
      *
      * @param connection connection
-     * @param refresh
-     * @param logs
+     * @param refresh refrash data
+     * @param logs activate logs output
      * @return CP List of attributes
      */
     public CompletionStage<List<AttributeList>> getAttributeList(Connection connection, boolean refresh, boolean logs) {
@@ -689,6 +689,7 @@ public class RedisController extends Controller {
             if (logs) {
                 log.debug("getting AttributeList , end:{}", now());
                 log.debug("AttributeList size:{}", res.size());
+                log.debug("AttributeList {}", Json.toJson(res));
             }
             return res;
         });
