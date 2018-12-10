@@ -440,21 +440,29 @@ public class RedisController extends Controller {
             name = "refresh",
             dataType = "boolean",
             paramType = "query",
-            defaultValue = "false",
+            defaultValue = "true",
             value = "Полный сброс кеша"
+        ),
+        @ApiImplicitParam(
+            name = "reloadSiCalculation",
+            dataType = "boolean",
+            paramType = "query",
+            defaultValue = "false",
+            value = "Перевыгрузить si_calculation(true) или перевыгрузить только справочники(false)"
         ),
         @ApiImplicitParam(
             name = "groupingSetId",
             dataType = "int",
             paramType = "query",
             defaultValue = "0",
-            value = "Загрузить в реддис si_calculation c указанным срезом. 0 - Грузить все"
+            value = "Загрузить в редис si_calculation c указанным срезом. 0 - Грузить все"
         )
     })
     public Result reloadKuduToRedis() {
 
         // получаем параметры запроса
         boolean refresh = Boolean.parseBoolean(request().getQueryString("refresh"));
+        boolean reloadSiCalculation = Boolean.parseBoolean(request().getQueryString("reloadSiCalculation"));
         int groupingSetId = Integer.parseInt(request().getQueryString("groupingSetId"));
 
         DataSource ds = new DataSource();
@@ -478,8 +486,10 @@ public class RedisController extends Controller {
                     transferFreights(connection);
                     // 2) Грузим groupingSets
                     List<GroupingSets> sets = transferGroupingSets(connection);
-                    // 3) Грузим si_calculation
-                    transferSiCalculation(connection, groupingSetId);
+                    if (reloadSiCalculation) {
+                        // 3) Грузим si_calculation
+                        transferSiCalculation(connection, groupingSetId);
+                    }
 
                 } catch (SQLException e) {
                     e.iterator()
