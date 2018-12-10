@@ -209,7 +209,7 @@ public class RedisController extends Controller {
 
                     // Проверяем json на полноту данных
                     duration = asyncCacheApi.get(keyBuilder.toString())
-                        .toCompletableFuture().join() == null ? ABSENT_METRIX : (long) asyncCacheApi.get(keyBuilder.toString())
+                        .toCompletableFuture().join() == null ? ABSENT_METRIX : (double) asyncCacheApi.get(keyBuilder.toString())
                         .toCompletableFuture().join();
                     if (duration > 0) break;
 
