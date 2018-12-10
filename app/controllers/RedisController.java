@@ -83,6 +83,13 @@ public class RedisController extends Controller {
         produces = "application/json")
     @ApiImplicitParams({
         @ApiImplicitParam(
+            name = "logs",
+            dataType = "boolean",
+            paramType = "query",
+            value = "Выводить данные в лог",
+            defaultValue = "false"
+        ),
+        @ApiImplicitParam(
             name = "body",
             dataType = "dto.bigdata.BigDataQueryDto",
             paramType = "body",
@@ -92,6 +99,8 @@ public class RedisController extends Controller {
     @SuppressWarnings("unchecked")
     public CompletionStage<Result> getSiCalculationRedis() {
         log.debug("<< getSiCalculationRedis < start, now:{}", now());
+
+        boolean logs = Boolean.parseBoolean(request().getQueryString("logs"));
 
         BigDataQueryResponseList response = new BigDataQueryResponseList();
         List<BigDataQueryResponse> responseList = new ArrayList<>();
@@ -110,8 +119,9 @@ public class RedisController extends Controller {
             log.debug("<< getSiCalculationRedis < json: {}", json);
 
             BigDataQueryDto body = Json.fromJson(json, BigDataQueryDto.class);
-            log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
-
+            if(logs) {
+                log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
+            }
             List<AttributeList> attributeList = getAttributeList(connection, false, true)
                 .toCompletableFuture().join();
 
@@ -136,8 +146,11 @@ public class RedisController extends Controller {
                     List<AttributeList> attrs = attributeList.stream()
                         .filter(data -> data.getGroupingSetId() == grSetId)
                         .collect(Collectors.toList());
-                    log.debug("groupingSetId:{} attributes:{}", groupingSetId, attrs.toString());
 
+                    if(logs) {
+                        log.debug("groupingSetId:{} attributes:{}", groupingSetId, attrs.toString());
+
+                    }
                     // Получаем станции и дороги
                     Long sndStIdRw = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
                     Long sndStIdDp = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
@@ -203,7 +216,11 @@ public class RedisController extends Controller {
                         }
 
                     }
-                    log.debug("key={}", keyBuilder.toString());
+
+                    if(logs) {
+                        log.debug("key={}", keyBuilder.toString());
+                    }
+
                     // Проверяем json на полноту данных
                     duration = asyncCacheApi.get(keyBuilder.toString())
                         .toCompletableFuture().join() == null ? ABSENT_METRIX : (long) asyncCacheApi.get(keyBuilder.toString())
