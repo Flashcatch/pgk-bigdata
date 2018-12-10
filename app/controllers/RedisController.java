@@ -435,6 +435,15 @@ public class RedisController extends Controller {
     }
 
     /**
+     * Remove all data from redis
+     * @return Result
+     */
+    @ApiOperation(value = "removeAll")
+    public CompletionStage<Result> removeAll() {
+        return asyncCacheApi.removeAll().thenCompose(done -> remove("Removed"));
+    }
+
+    /**
      * @return Result
      * @author SandQ
      */
@@ -478,9 +487,9 @@ public class RedisController extends Controller {
 
                 log.debug(">> reloadKuduToRedis > Akka scheduler started:{}", now());
 
-                // Очищаем все ключи в кеше
+                // Очищаем все ключи в кеше и ждем полной очистки
                 if (refresh) {
-                    asyncCacheApi.removeAll();
+                    asyncCacheApi.removeAll().toCompletableFuture().join();
                 }
 
                 try (Connection connection = ds.getConnection()) {

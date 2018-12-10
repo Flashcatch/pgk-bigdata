@@ -7,6 +7,7 @@ POST          /v1/redis/sicalculation                               controllers.
 GET           /v1/redis/:key                                        controllers.RedisController.get(key: String)
 POST          /v1/redis/:key                                        controllers.RedisController.set(key: String)
 DELETE        /v1/redis/:key                                        controllers.RedisController.remove(key:String)
+DELETE        /v1/invalidate/redis                                  controllers.RedisController.removeAll()
 
 GET           /v1/bigdata/query/:id/id                              controllers.BigDataController.getBigDataQueryById(id: Long)
 GET           /v1/kudu                                              controllers.BigDataController.kuduDirect
