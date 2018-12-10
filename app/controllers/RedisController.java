@@ -472,16 +472,16 @@ public class RedisController extends Controller {
         DataSource ds = new DataSource();
         ds.setURL("jdbc:impala://192.168.100.51:21050");
 
-        // Очищаем все ключи в кеше
-        if (refresh) {
-            asyncCacheApi.removeAll();
-        }
-
         this.actorSystem.scheduler().scheduleOnce(
             Duration.create(10, TimeUnit.SECONDS), // delay
             () -> {
 
                 log.debug(">> reloadKuduToRedis > Akka scheduler started:{}", now());
+
+                // Очищаем все ключи в кеше
+                if (refresh) {
+                    asyncCacheApi.removeAll();
+                }
 
                 try (Connection connection = ds.getConnection()) {
 
