@@ -102,8 +102,8 @@ public class RedisController extends Controller {
         try (Connection connection = ds.getConnection()) {
 
             // По ключу grsets получаем grouping_set_id, и уровень метрики
-            List<GroupingSets> groupingSetsList = (List<GroupingSets>)asyncCacheApi.get("grsets")
-                    .toCompletableFuture().join();
+            List<GroupingSets> groupingSetsList = (List<GroupingSets>) asyncCacheApi.get("grsets")
+                .toCompletableFuture().join();
 
             log.debug("<< getDataUsingImpala < Processing request data");
             JsonNode json = request().body().asJson();
@@ -651,6 +651,7 @@ public class RedisController extends Controller {
 
     /**
      * getting attribute list
+     *
      * @param connection connection
      * @param refresh
      * @param logs
@@ -683,13 +684,14 @@ public class RedisController extends Controller {
             } catch (SQLException e) {
                 log.error("getAttributeList query exec error:{} ", e.getMessage());
             }
-
+            return attributeList;
+        })).thenApply(res -> {
             if (logs) {
                 log.debug("getting AttributeList , end:{}", now());
-                log.debug("AttributeList size:{}", attributeList.size());
+                log.debug("AttributeList size:{}", res.size());
             }
-            return attributeList;
-        }));
+            return res;
+        });
     }
 
 }
