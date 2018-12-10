@@ -436,11 +436,12 @@ public class RedisController extends Controller {
 
     /**
      * Remove all data from redis
+     *
      * @return Result
      */
     @ApiOperation(value = "removeAll")
     public CompletionStage<Result> removeAll() {
-        return asyncCacheApi.removeAll().thenCompose(done -> remove("Removed"));
+        return asyncCacheApi.removeAll().thenApply(res -> ok());
     }
 
     /**
