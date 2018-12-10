@@ -196,6 +196,7 @@ public class RedisController extends Controller {
                         }
 
                     }
+                    log.debug("key={}", keyBuilder.toString());
                     // Проверяем json на полноту данных
                     duration = asyncCacheApi.get(keyBuilder.toString())
                         .toCompletableFuture().join() == null ? ABSENT_METRIX : (long) asyncCacheApi.get(keyBuilder.toString())
