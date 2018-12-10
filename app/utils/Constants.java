@@ -8,7 +8,7 @@ package utils;
 public final class Constants {
 
     public static final Long WAGON_NUM = 60_037_652L;
-    public static final Long ABSENT_METRIX = -100L;
+    public static final Double ABSENT_METRIX = -100D;
     public static final int NTH_LINE = 500000;
 
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";

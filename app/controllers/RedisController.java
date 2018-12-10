@@ -81,7 +81,7 @@ public class RedisController extends Controller {
     @ApiOperation(value = "Получение метрик из si_calculation, используя redis",
         consumes = "application/json",
         produces = "application/json")
-    @ApiImplicitParams({
+    @ApiImplicitParams( {
         @ApiImplicitParam(
             name = "logs",
             dataType = "boolean",
@@ -119,7 +119,7 @@ public class RedisController extends Controller {
             log.debug("<< getSiCalculationRedis < json: {}", json);
 
             BigDataQueryDto body = Json.fromJson(json, BigDataQueryDto.class);
-            if(logs) {
+            if (logs) {
                 log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
             }
             List<AttributeList> attributeList = getAttributeList(connection, false, true)
@@ -132,7 +132,7 @@ public class RedisController extends Controller {
             for (BigDataQueryParamsDto params : metricsBlanks) {
 
                 long groupingSetId = -1;
-                long duration = ABSENT_METRIX;
+                double duration = ABSENT_METRIX;
                 String key;
                 StringBuilder keyBuilder = new StringBuilder();
 
@@ -147,7 +147,7 @@ public class RedisController extends Controller {
                         .filter(data -> data.getGroupingSetId() == grSetId)
                         .collect(Collectors.toList());
 
-                    if(logs) {
+                    if (logs) {
                         log.debug("groupingSetId:{} attributes:{}", groupingSetId, attrs.toString());
 
                     }
@@ -203,7 +203,7 @@ public class RedisController extends Controller {
 
                     }
 
-                    if(logs) {
+                    if (logs) {
                         log.debug("key={}", keyBuilder.toString());
                     }
 
@@ -218,6 +218,7 @@ public class RedisController extends Controller {
                     .id(params.getId())
                     .duration(duration)
                     .sndStId(params.getSndStId())
+                    .rsvStId(params.getRsvStId())
                     .rodId(params.getRodId())
                     .routeSendSign(params.getRouteSendSign())
                     .build();
@@ -659,7 +660,7 @@ public class RedisController extends Controller {
 
                 }
                 k = keyBuilder.toString();
-                asyncCacheApi.set(k, rs.getLong(26));
+                asyncCacheApi.set(k, rs.getDouble(26));
                 if (counter % nthLine == 0) { // Check if the line is a full multiple of your nthLine
                     log.debug("Si Calculation , counter={} rows processed", counter);
                 }
@@ -676,8 +677,8 @@ public class RedisController extends Controller {
      * getting attribute list.
      *
      * @param connection connection
-     * @param refresh refrash data
-     * @param logs activate logs output
+     * @param refresh    refrash data
+     * @param logs       activate logs output
      * @return CP List of attributes
      */
     public CompletionStage<List<AttributeList>> getAttributeList(Connection connection, boolean refresh, boolean logs) {

@@ -23,7 +23,7 @@
     <logger name="utils" level="DEBUG" />
     <logger name="play.api.cache.redis" level="INFO" />
 
-    <root level="DEBUG">
+    <root level="WARN">
         <appender-ref ref="ASYNCSTDOUT" />
     </root>
 
