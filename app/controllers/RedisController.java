@@ -138,6 +138,12 @@ public class RedisController extends Controller {
                         .collect(Collectors.toList());
                     log.debug("groupingSetId:{} attributes:{}", groupingSetId, attrs.toString());
 
+                    // Получаем станции и дороги
+                    Long sndStIdRw = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
+                    Long sndStIdDp = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
+                    Long rsvStIdRw = (Long) asyncCacheApi.get("station:rw:" + params.getRsvStId()).toCompletableFuture().join();
+                    Long rsvStIdDp = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
+
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
                     keyBuilder = new StringBuilder(key);
 

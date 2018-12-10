@@ -71,7 +71,6 @@ public final class Constants {
     public static final String FREIGHTS = "select f.key, f.fr_group" +
         "  from " + TABLE_PREFIX + "freight f";
 
-
     /*"select st.DP_ID from ml.ws_station st"
             + " where st.station_id = ?"
             + "   and sysdate between st.beg_date and st.end_date "
