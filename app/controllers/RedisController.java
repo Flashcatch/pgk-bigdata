@@ -142,52 +142,57 @@ public class RedisController extends Controller {
 
                     for (AttributeList attrList : attrs) {
 
+                        // TODO: Доработать указанные параметры
+                        /*
                         if ("SND_CN_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":snd_cn_id:").append(params.getSndStId());
+                            keyBuilder.append(":snd_cn_id:").append(params.cn());
                         } else if ("RSV_CN_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":rsv_cn_id:").append(params.getSndStId());
-                        } else if ("SND_DP_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":snd_dp_id:").append(params.getSndStId());
-                        } else if ("RSV_DP_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":rsv_dp_id:").append(params.getSndStId());
+                            keyBuilder.append(":rsv_cn_id:").append(params.rsv());
                         } else if ("SND_RW_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":snd_rw_id:").append(params.getSndStId());
+                            keyBuilder.append(":snd_rw_id:").append(params.rw());
                         } else if ("RSV_RW_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":rsv_rw_id:").append(params.getSndStId());
+                            keyBuilder.append(":rsv_rw_id:").append(params.rw());
+                        } else if ("FR_GROUP_ID".equals(attrList.getSqlCalcName())) {
+                            keyBuilder.append(":fr_group_id:").append(params.fr());
+                        } else if ("ISLOAD".equals(attrList.getSqlCalcName())) {
+                            keyBuilder.append(":isload:").append(params.is());
+                        } else if ("SEND_KIND_ID".equals(attrList.getSqlCalcName())) {
+                            keyBuilder.append(":send_kind_id:").append(params.kind());
+                        } else if ("PARK_SIGN".equals(attrList.getSqlCalcName())) {
+                            keyBuilder.append(":park_sign:").append(params.sig());
+                        } else if ("MODEL_PROPERTY_ID".equals(attrList.getSqlCalcName())) {
+                            keyBuilder.append(":model_property_id:").append(params.mod());
+                        } else if ("ST_ID".equals(attrList.getSqlCalcName())) {
+                            keyBuilder.append(":st_id:").append(params.sti());
+                        }
+                        */
+
+                        if ("SND_DP_ID".equals(attrList.getSqlCalcName())) {
+                            keyBuilder.append(":snd_dp_id:").append(params.getSndDpId());
+                        } else if ("RSV_DP_ID".equals(attrList.getSqlCalcName())) {
+                            keyBuilder.append(":rsv_dp_id:").append(params.getRsvDpId());
                         } else if ("SND_ST_ID".equals(attrList.getSqlCalcName())) {
                             keyBuilder.append(":snd_st_id:").append(params.getSndStId());
                         } else if ("RSV_ST_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":rsv_st_id:").append(params.getSndStId());
+                            keyBuilder.append(":rsv_st_id:").append(params.getRsvStId());
                         } else if ("SND_ORG_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":snd_org_id:").append(params.getSndStId());
+                            keyBuilder.append(":snd_org_id:").append(params.getSndOrgId());
                         } else if ("RSV_ORG_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":rsv_org_id:").append(params.getSndStId());
+                            keyBuilder.append(":rsv_org_id:").append(params.getRsvOrgId());
                         } else if ("FR_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":fr_id:").append(params.getSndStId());
-                        } else if ("FR_GROUP_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":fr_group_id:").append(params.getSndStId());
-                        } else if ("ISLOAD".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":isload:").append(params.getSndStId());
+                            keyBuilder.append(":fr_id:").append(params.getFrId());
                         } else if ("ROD_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":rod_id:").append(params.getSndStId());
-                        } else if ("SEND_KIND_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":send_kind_id:").append(params.getSndStId());
-                        } else if ("PARK_SIGN".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":park_sign:").append(params.getSndStId());
+                            keyBuilder.append(":rod_id:").append(params.getRodId());
                         } else if ("ROUTE_SEND_SIGN".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":route_send_sign:").append(params.getSndStId());
-                        } else if ("MODEL_PROPERTY_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":model_property_id:").append(params.getSndStId());
-                        } else if ("ST_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":st_id:").append(params.getSndStId());
+                            keyBuilder.append(":route_send_sign:").append(params.getRouteSendSign());
                         } else if ("CLIENT_ID".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":client_id:").append(params.getSndStId());
+                            keyBuilder.append(":client_id:").append(params.getClientId());
                         } else if ("VID_PODGOTOVKI".equals(attrList.getSqlCalcName())) {
                             keyBuilder.append(":vid_podgotovki:").append(params.getVidPodgotovki());
                         } else if ("VID_ZABRAKOVKI".equals(attrList.getSqlCalcName())) {
                             keyBuilder.append(":vid_zabrakovki:").append(params.getVidZabrakovki());
                         } else if ("IS_TECH_ST".equals(attrList.getSqlCalcName())) {
-                            keyBuilder.append(":is_tech_st:").append(params.getSndStId());
+                            keyBuilder.append(":is_tech_st:").append(params.getIsTechSt());
                         }
 
                     }
