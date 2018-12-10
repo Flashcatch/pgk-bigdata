@@ -136,6 +136,7 @@ public class RedisController extends Controller {
                     List<AttributeList> attrs = attributeList.stream()
                         .filter(data -> data.getGroupingSetId() == grSetId)
                         .collect(Collectors.toList());
+                    log.debug("groupingSetId:{} attributes:{}", groupingSetId, attrs.toString());
 
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
                     keyBuilder = new StringBuilder(key);
@@ -689,7 +690,6 @@ public class RedisController extends Controller {
             if (logs) {
                 log.debug("getting AttributeList , end:{}", now());
                 log.debug("AttributeList size:{}", res.size());
-                log.debug("AttributeList {}", Json.toJson(res));
             }
             return res;
         });
