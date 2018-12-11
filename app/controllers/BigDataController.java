@@ -3,6 +3,7 @@ package controllers;
 import akka.actor.ActorSystem;
 import com.cloudera.impala.jdbc41.DataSource;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -10,13 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kudu.ColumnSchema;
 import org.apache.kudu.Schema;
-import org.apache.kudu.client.KuduClient;
-import org.apache.kudu.client.KuduException;
-import org.apache.kudu.client.KuduScanner;
-import org.apache.kudu.client.KuduTable;
-import org.apache.kudu.client.ListTablesResponse;
-import org.apache.kudu.client.RowResult;
-import org.apache.kudu.client.RowResultIterator;
+import org.apache.kudu.client.*;
 import play.cache.AsyncCacheApi;
 import play.cache.NamedCache;
 import play.db.Database;
@@ -28,11 +23,8 @@ import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 import services.BigDataService;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static utils.Constants.IMPALA_URL;
 
 /**
  * This controller contains an action to handle HTTP requests to the application's home page.
@@ -63,17 +56,21 @@ public class BigDataController extends Controller {
     private final ActorSystem actorSystem;
     private final ExecutionContext executionContext;
 
+    private final Config config;
+
     @Inject
     public BigDataController(AsyncCacheApi asyncCacheApi,
                              BigDataService bigDataService,
                              @NamedDatabase("default") Database db,
                              ActorSystem actorSystem,
-                             ExecutionContext executionContext) {
+                             ExecutionContext executionContext,
+                             Config config) {
         this.asyncCacheApi = asyncCacheApi;
         this.bigDataService = bigDataService;
         this.db = db;
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
+        this.config = config;
     }
 
     @ApiOperation(value = "Получение Big Data запросов")
@@ -352,7 +349,8 @@ public class BigDataController extends Controller {
                     log.debug(">> kuduToPostgreSQL > Done cleaning.");
 
                     DataSource ds = new com.cloudera.impala.jdbc41.DataSource();
-                    ds.setURL("jdbc:impala://192.168.100.51:21050");
+                    ds.setURL(IMPALA_URL + config.getString("impala.host") + ":" + config.getString("impala.port"));
+
                     long counter = 0;
 
                     String query;
