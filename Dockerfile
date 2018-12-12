@@ -7,6 +7,7 @@ ENV REDIS_URL="192.168.100.82"
 ENV IMPALA_HOST="192.168.100.51"
 ENV IMPALA_PORT="21050"
 ENV PGDBIP="192.168.100.75"
+ENV JAVA_OPTS="-Xms512m -Xmx2G"
 # Создаем рабочую директорию
 WORKDIR /pgk-bigdata
 # Скопировать исходники в pgk-bigdata
