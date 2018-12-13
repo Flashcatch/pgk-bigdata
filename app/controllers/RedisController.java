@@ -114,15 +114,14 @@ public class RedisController extends Controller {
             List<GroupingSets> groupingSetsList = (List<GroupingSets>) asyncCacheApi.get("grsets")
                 .toCompletableFuture().join();
 
-            log.debug("<< getSiCalculationRedis < Processing request data");
+            //log.debug("<< getSiCalculationRedis < Processing request data");
             JsonNode json = request().body().asJson();
-            log.debug("<< getSiCalculationRedis < json: {}", json);
+            //log.debug("<< getSiCalculationRedis < json: {}", json);
 
             BigDataQueryDto body = Json.fromJson(json, BigDataQueryDto.class);
-            if (logs) {
-                log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
-            }
-            List<AttributeList> attributeList = getAttributeList(connection, false, true)
+            //log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
+
+            List<AttributeList> attributeList = getAttributeList(connection, false, logs)
                 .toCompletableFuture().join();
 
             // Цикл по json данным
@@ -163,7 +162,6 @@ public class RedisController extends Controller {
                     for (AttributeList attrList : attrs) {
 
                         String sqlCalcName = attrList.getSqlCalcName();
-                        // TODO: Доработать указанные параметры
 
                         if ("SND_RW_ID".equals(sqlCalcName)) {
                             keyBuilder.append(":snd_rw_id:").append(sndRwId);
