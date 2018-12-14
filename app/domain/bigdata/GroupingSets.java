@@ -16,6 +16,6 @@ public class GroupingSets implements Serializable {
 
     long statIndicatorId;
     long groupingSetId;
-    long level;
+    int level;
 
 }

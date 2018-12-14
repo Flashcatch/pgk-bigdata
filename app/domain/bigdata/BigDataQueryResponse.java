@@ -1,6 +1,7 @@
 package domain.bigdata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class BigDataQueryResponse {
 
     private Integer id;
-    private Double duration;
+    private String duration;
     @JsonProperty("snd_st_id")
     private Integer sndStId;
     @JsonProperty("rsv_st_id")
@@ -25,6 +26,8 @@ public class BigDataQueryResponse {
     private Integer rodId;
     @JsonProperty("route_send_sign")
     private Integer routeSendSign;
+    @JsonProperty("calc_level")
+    private Integer calcLevel;
     private String exception;
 
 }

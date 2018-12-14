@@ -124,6 +124,7 @@ public class RedisController extends Controller {
                 String key;
                 StringBuilder keyBuilder = new StringBuilder();
 
+                Integer calcLvl = -1;
                 for (GroupingSets groupingSets : groupingSetsList) {
 
                     groupingSetId = groupingSets.getGroupingSetId();
@@ -198,19 +199,21 @@ public class RedisController extends Controller {
                     duration = asyncCacheApi.get(keyBuilder.toString())
                         .toCompletableFuture().join() == null ? ABSENT_METRIX : (double) asyncCacheApi.get(keyBuilder.toString())
                         .toCompletableFuture().join();
+                    calcLvl = groupingSets.getLevel();
                     if (duration > 0) break;
 
                 }
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
                     .id(params.getId())
-                    .duration(duration)
+                    .duration(String.format("%1$,.2f", duration))
                     .sndStId(params.getSndStId())
                     .rsvStId(params.getRsvStId())
                     .rodId(params.getRodId())
                     .routeSendSign(params.getRouteSendSign())
+                    .calcLevel(calcLvl)
                     .build();
                 if (duration == ABSENT_METRIX) {
-                    bdResponse.setDuration(ABSENT_METRIX);
+                    bdResponse.setDuration(String.format("%1$,.2f", ABSENT_METRIX));
                     bdResponse.setException("duration is null! key=" + keyBuilder.toString());
                 }
                 responseList.add(bdResponse);
@@ -558,7 +561,7 @@ public class RedisController extends Controller {
                 GroupingSets s = GroupingSets.builder()
                     .statIndicatorId(rs.getLong(1))
                     .groupingSetId(rs.getLong(2))
-                    .level(rs.getLong(3))
+                    .level(rs.getInt(3))
                     .build();
                 sets.add(s);
             }
