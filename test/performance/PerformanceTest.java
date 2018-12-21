@@ -13,8 +13,6 @@ import scala.concurrent.ExecutionContext;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static utils.Constants.IMPALA_URL;
-
 public class PerformanceTest extends WithApplication {
 
     private AsyncCacheApi asyncCacheApi;
@@ -35,7 +33,7 @@ public class PerformanceTest extends WithApplication {
 
         RedisController controller = new RedisController(asyncCacheApi, actorSystem, executionContext, config);
         DataSource ds = new DataSource();
-        ds.setURL(IMPALA_URL + config.getString("impala.host") + ":" + config.getString("impala.port"));
+        ds.setURL("jdbc:impala://192.168.100.51:21050");
         try (Connection connection = ds.getConnection()) {
             for (int i = 1; i <= 50000; i++) {
                 controller.getAttributeList(connection, false, true);

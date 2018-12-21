@@ -3,7 +3,6 @@ package controllers;
 import akka.actor.ActorSystem;
 import com.cloudera.impala.jdbc41.DataSource;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -23,10 +22,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Warmup;
 import play.cache.AsyncCacheApi;
 import play.cache.NamedCache;
 import play.libs.Json;
@@ -117,8 +114,6 @@ public class RedisController extends Controller {
     @SuppressWarnings("unchecked")
     @BenchmarkMode(Mode.SingleShotTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Measurement(batchSize = 10000, iterations = 10)
-    @Warmup(batchSize = 10000, iterations = 10)
     public CompletionStage<Result> getSiCalculationRedis() {
         log.debug("<< getSiCalculationRedis < start, now:{}", now());
 
@@ -136,6 +131,10 @@ public class RedisController extends Controller {
             List<GroupingSets> groupingSetsList = (List<GroupingSets>) asyncCacheApi.get("grsets")
                 .toCompletableFuture().join();
 
+            if (logs) {
+                log.debug("grsets populated");
+            }
+
             //log.debug("<< getSiCalculationRedis < Processing request data");
             JsonNode json = request().body().asJson();
             //log.debug("<< getSiCalculationRedis < json: {}", json);
@@ -143,11 +142,24 @@ public class RedisController extends Controller {
             BigDataQueryDto body = Json.fromJson(json, BigDataQueryDto.class);
             //log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
 
+            // Получаем список полей
             List<AttributeList> attributeList = getAttributeList(connection, false, logs)
                 .toCompletableFuture().join();
 
+            if (logs) {
+                log.debug("attributeList populated");
+            }
+
             // Цикл по json данным
-            List<BigDataQueryParamsDto> metricsBlanks = body.getMetricsBlanks();
+
+            List<BigDataQueryParamsDto> metricsBlanks = null;
+
+            if (body.getMetricsBlanks() != null) {
+                metricsBlanks = body.getMetricsBlanks();
+            } else {
+                return completedFuture(notAcceptable("empty json!"));
+            }
+
             response.setActualDate(body.getActualDate());
 
             for (BigDataQueryParamsDto params : metricsBlanks) {
@@ -158,6 +170,7 @@ public class RedisController extends Controller {
                 StringBuilder keyBuilder = new StringBuilder();
 
                 Integer calcLvl = -1;
+
                 for (GroupingSets groupingSets : groupingSetsList) {
 
                     groupingSetId = groupingSets.getGroupingSetId();
@@ -235,7 +248,11 @@ public class RedisController extends Controller {
                     calcLvl = groupingSets.getLevel();
                     if (duration > 0) break;
 
+                    if (logs) {
+                        log.debug("grset row processed");
+                    }
                 }
+
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
                     .id(params.getId())
                     .duration(String.format("%1$,.2f", duration))
@@ -245,11 +262,17 @@ public class RedisController extends Controller {
                     .routeSendSign(params.getRouteSendSign())
                     .calcLevel(calcLvl)
                     .build();
+
                 if (duration == ABSENT_METRIX) {
                     bdResponse.setDuration(String.format("%1$,.2f", ABSENT_METRIX));
                     bdResponse.setException("duration is null! key=" + keyBuilder.toString());
                 }
+
                 responseList.add(bdResponse);
+
+                if (logs) {
+                    log.debug("json row processed");
+                }
             }
 
         } catch (SQLException e) {
@@ -406,15 +429,7 @@ public class RedisController extends Controller {
     @ApiOperation(value = "get")
     public CompletionStage<Result> get(@ApiParam(value = "key", required = true) String key) {
         CompletionStage<Object> result = asyncCacheApi.get(key);
-        return result.thenApply(v -> {
-            if (v instanceof ObjectNode) {
-                return ok((JsonNode) v);
-            } else if (v instanceof String) {
-                return ok((String) v);
-            } else {
-                return ok(Json.toJson(v));
-            }
-        });
+        return result.thenApply(v -> ok(Json.toJson(v)));
 
     }
 
