@@ -17,9 +17,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
 import play.cache.AsyncCacheApi;
 import play.cache.NamedCache;
 import play.libs.Json;
@@ -108,8 +105,6 @@ public class RedisController extends Controller {
         )
     })
     @SuppressWarnings("unchecked")
-    @BenchmarkMode(Mode.SingleShotTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public CompletionStage<Result> getSiCalculationRedis() {
         log.debug("<< getSiCalculationRedis < start, now:{}", now());
 
@@ -171,6 +166,7 @@ public class RedisController extends Controller {
 
                 int calcLvl = -1;
 
+                /*
                 for (GroupingSets groupingSets : groupingSetsList) {
 
                     groupingSetId = groupingSets.getGroupingSetId();
@@ -234,14 +230,14 @@ public class RedisController extends Controller {
                     keyBuilder.setLength(0); // set length of buffer to 0
                     keyBuilder.trimToSize(); // trim the underlying buffer
 
-                    /*if (logs) {
-                        log.debug("key={}", key);
-                    }
+                    //if (logs) {
+                    //    log.debug("key={}", key);
+                    // }
 
                     // Проверяем json на полноту данных
-                    if (logs) {
-                        log.debug(">> GETTING DURATION FROM CACHE <<");
-                    }*/
+                    //if (logs) {
+                    //    log.debug(">> GETTING DURATION FROM CACHE <<");
+                    //}
 
                     Object cachedObj = asyncCacheApi.get(key).toCompletableFuture().join();
 
@@ -251,19 +247,20 @@ public class RedisController extends Controller {
                         duration = (double) cachedObj;
                     }
 
-                    /*if (logs) {
-                        log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
-                    }*/
+                    //if (logs) {
+                    //    log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
+                    //}
 
                     calcLvl = groupingSets.getLevel();
 
                     if (duration > 0) break;
 
-                    /*if (logs) {
-                        log.debug("grset {} row processed", groupingSetId);
-                    }*/
+                    //if (logs) {
+                    //    log.debug("grset {} row processed", groupingSetId);
+                    //}
 
                 } // Прошли все уровни
+                */
 
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
                     .id(params.getId())
@@ -294,8 +291,6 @@ public class RedisController extends Controller {
         log.debug("<< getSiCalculationRedis < end, now:{}", now());
         return completedFuture(ok(Json.toJson(response)));
     }
-
-
 
     /**
      * @param key key
