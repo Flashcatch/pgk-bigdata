@@ -165,7 +165,7 @@ public class RedisController extends Controller {
             for (BigDataQueryParamsDto params : metricsBlanks) {
 
                 long groupingSetId = -1;
-                double duration = ABSENT_METRIX;
+                Double duration = ABSENT_METRIX;
                 String key;
                 StringBuilder keyBuilder = new StringBuilder();
 
@@ -193,7 +193,7 @@ public class RedisController extends Controller {
                     Long rsvDpId = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
 
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
-                    keyBuilder = new StringBuilder(key);
+                    keyBuilder.append(key);
 
                     for (AttributeList attrList : attrs) {
 
@@ -242,10 +242,19 @@ public class RedisController extends Controller {
                     }
 
                     // Проверяем json на полноту данных
-                    duration = asyncCacheApi.get(keyBuilder.toString())
-                        .toCompletableFuture().join() == null ? ABSENT_METRIX : (double) asyncCacheApi.get(keyBuilder.toString())
-                        .toCompletableFuture().join();
+                    if (logs) {
+                        log.debug(">> GETTING DURATION FROM CACHE <<");
+                    }
+                    duration = (Double)asyncCacheApi.get(keyBuilder.toString()).toCompletableFuture().join();
+                    if (logs) {
+                        log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
+                    }
+
+                    if (duration == null)
+                        duration = ABSENT_METRIX;
+
                     calcLvl = groupingSets.getLevel();
+
                     if (duration > 0) break;
 
                     if (logs) {
