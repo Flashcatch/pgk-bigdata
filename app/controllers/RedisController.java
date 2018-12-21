@@ -165,11 +165,11 @@ public class RedisController extends Controller {
 
                 long groupingSetId = -1;
                 double duration = ABSENT_METRIX;
-                String key;
+                String key = "";
                 StringBuilder keyBuilder = new StringBuilder();
 
 
-                Integer calcLvl = -1;
+                int calcLvl = -1;
 
                 for (GroupingSets groupingSets : groupingSetsList) {
 
@@ -186,6 +186,7 @@ public class RedisController extends Controller {
                         log.debug("groupingSetId:{} attributes:{}", groupingSetId, attrs.toString());
 
                     }
+
                     // Получаем станции и дороги
                     Long sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
                     Long sndDpId = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
@@ -193,6 +194,7 @@ public class RedisController extends Controller {
                     Long rsvDpId = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
 
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
+
                     keyBuilder.append(key);
 
                     for (AttributeList attrList : attrs) {
@@ -233,9 +235,13 @@ public class RedisController extends Controller {
 
                     }
 
-                    /*if (logs) {
-                        log.debug("key={}", keyBuilder.toString());
-                    }*/
+                    // Ключ построен
+                    key = keyBuilder.toString();
+                    keyBuilder = null;
+
+                    if (logs) {
+                        log.debug("key={}", key);
+                    }
 
                     // Проверяем json на полноту данных
                     if (logs) {
@@ -244,7 +250,7 @@ public class RedisController extends Controller {
 
                     Object cachedObj = asyncCacheApi.get(keyBuilder.toString()).toCompletableFuture().join();
 
-                    if (cachedObj == null) {
+                    if (cachedObj.equals(null)) {
                         duration = ABSENT_METRIX;
                     } else {
                         duration = (double) cachedObj;
@@ -262,8 +268,7 @@ public class RedisController extends Controller {
                         log.debug("grset row processed");
                     }
 
-                    keyBuilder = null;
-                }
+                } // Прошли все уровни
 
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
                     .id(params.getId())
@@ -277,7 +282,7 @@ public class RedisController extends Controller {
 
                 if (duration == ABSENT_METRIX) {
                     bdResponse.setDuration(String.format("%1$,.2f", ABSENT_METRIX));
-                    bdResponse.setException("duration is null! key=" + keyBuilder.toString());
+                    bdResponse.setException("duration is null! key=" + key);
                 }
 
                 responseList.add(bdResponse);
