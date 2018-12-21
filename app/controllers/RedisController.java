@@ -165,7 +165,7 @@ public class RedisController extends Controller {
             for (BigDataQueryParamsDto params : metricsBlanks) {
 
                 long groupingSetId = -1;
-                Double duration = ABSENT_METRIX;
+                double duration = ABSENT_METRIX;
                 String key;
                 StringBuilder keyBuilder = new StringBuilder();
 
@@ -233,20 +233,20 @@ public class RedisController extends Controller {
 
                     }
 
-                    if (logs) {
+                    /*if (logs) {
                         log.debug("key={}", keyBuilder.toString());
-                    }
+                    }*/
 
                     // Проверяем json на полноту данных
                     if (logs) {
                         log.debug(">> GETTING DURATION FROM CACHE <<");
                     }
-                    duration = (Double)asyncCacheApi.get(keyBuilder.toString()).toCompletableFuture().join();
+                    duration = (double)asyncCacheApi.get(keyBuilder.toString()).toCompletableFuture().join();
                     if (logs) {
                         log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
                     }
 
-                    if (duration == null)
+                    if (Double.valueOf(duration) == null)
                         duration = ABSENT_METRIX;
 
                     calcLvl = groupingSets.getLevel();
