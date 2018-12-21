@@ -26,6 +26,11 @@ libraryDependencies += "com.google.inject.extensions" % "guice-multibindings" % 
 
 libraryDependencies += "com.github.karelcemus" %% "play-redis" % "2.3.0"
 
+// https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-core
+libraryDependencies += "org.openjdk.jmh" % "jmh-core" % "1.21"
+// https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-generator-annprocess
+libraryDependencies += "org.openjdk.jmh" % "jmh-generator-annprocess" % "1.21" % Test
+
 // checkstyle settings
 checkstyleSeverityLevel := Some(CheckstyleSeverityLevel.Error)
 checkstyleConfigLocation := CheckstyleConfigLocation.File("checkstyle/checkstyle.xml")

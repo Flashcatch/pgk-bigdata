@@ -22,6 +22,11 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Warmup;
 import play.cache.AsyncCacheApi;
 import play.cache.NamedCache;
 import play.libs.Json;
@@ -110,6 +115,10 @@ public class RedisController extends Controller {
         )
     })
     @SuppressWarnings("unchecked")
+    @BenchmarkMode(Mode.SingleShotTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Measurement(batchSize = 10000, iterations = 10)
+    @Warmup(batchSize = 10000, iterations = 10)
     public CompletionStage<Result> getSiCalculationRedis() {
         log.debug("<< getSiCalculationRedis < start, now:{}", now());
 
