@@ -153,6 +153,8 @@ public class RedisController extends Controller {
 
             response.setActualDate(body.getActualDate());
 
+            log.debug("json elements:{}", metricsBlanks.size());
+
             for (BigDataQueryParamsDto params : metricsBlanks) {
 
                 long groupingSetId = -1;
