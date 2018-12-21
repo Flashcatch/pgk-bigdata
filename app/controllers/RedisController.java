@@ -179,8 +179,6 @@ public class RedisController extends Controller {
                         .collect(Collectors.toList());
 
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
-
-                    /*
                     keyBuilder.append(key);
 
                     for (AttributeList attrList : attrs) {
@@ -251,13 +249,11 @@ public class RedisController extends Controller {
 
                     if (duration > 0) break;
 
-*/
                     //if (logs) {
                     //  log.debug("grset {} row processed", groupingSetId);
                     //}
 
                 } // Прошли все уровни
-
 
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
                     .id(params.getId())
