@@ -258,9 +258,9 @@ public class RedisController extends Controller {
                     if (duration > 0) break;
 
 */
-                    if (logs) {
-                       log.debug("grset {} row processed", groupingSetId);
-                    }
+                    //if (logs) {
+                    //  log.debug("grset {} row processed", groupingSetId);
+                    //}
 
                 } // Прошли все уровни
 
