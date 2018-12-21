@@ -166,7 +166,7 @@ public class RedisController extends Controller {
 
                 int calcLvl = -1;
 
-                /*
+
                 for (GroupingSets groupingSets : groupingSetsList) {
 
                     groupingSetId = groupingSets.getGroupingSetId();
@@ -176,6 +176,8 @@ public class RedisController extends Controller {
                     List<AttributeList> attrs = attributeList.stream()
                         .filter(data -> data.getGroupingSetId() == grSetId)
                         .collect(Collectors.toList());
+
+                    /*
 
                     // Получаем станции и дороги
                     Long sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
@@ -255,12 +257,13 @@ public class RedisController extends Controller {
 
                     if (duration > 0) break;
 
-                    //if (logs) {
-                    //    log.debug("grset {} row processed", groupingSetId);
-                    //}
+*/
+                    if (logs) {
+                       log.debug("grset {} row processed", groupingSetId);
+                    }
 
                 } // Прошли все уровни
-                */
+
 
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
                     .id(params.getId())
