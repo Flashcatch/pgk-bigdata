@@ -10,12 +10,21 @@ public final class Constants {
     public static final Double ABSENT_METRIX = -100D;
     public static final int NTH_LINE = 1000000;
     public static final String IMPALA_URL = "jdbc:impala://";
+    public static final int I17 = 17;
+    public static final int I18 = 18;
+    public static final int I19 = 19;
+    public static final int I20 = 20;
+    public static final int I21 = 21;
+    public static final int I22 = 22;
+    public static final int I23 = 23;
+    public static final int I24 = 24;
+    public static final int I25 = 25;
+    public static final int I26 = 26;
     private static final String TABLE_PREFIX = "ws_metrix.";
     public static final String GROUPING_SET = "select g.stat_indicator_id, g.grouping_set_id, g.level_val from " +
         TABLE_PREFIX + "si_stat_indicator i, " + TABLE_PREFIX + "si_grouping_set g" +
         " where i.stat_indicator_id = g.stat_indicator_id " +
         " ORDER BY stat_indicator_id asc, LEVEL_VAL desc";
-
     public static final String ATTRIBUTE_LIST = "select gs.grouping_set_id" +
         "     , al.sql_calc_name" +
         "  from " + TABLE_PREFIX + "si_grouping_set gs" +
@@ -23,7 +32,6 @@ public final class Constants {
         "     , " + TABLE_PREFIX + "attribute_list al     " +
         " where gse.grouping_set_id = gs.grouping_set_id" +
         "   and al.attribute_list_id = gse.attribute_list_id";
-
     public static final String SICALCULATION_QUERY = "select grouping_set_id," +
         "  year_month," +
         "  snd_cn_id ," +
@@ -51,13 +59,11 @@ public final class Constants {
         "  is_tech_st ," +
         "  agg_median" +
         "  from " + TABLE_PREFIX + "si_calculation c";
-
     public static final String STATIONS = "select s.station_id" +
         "     , s.rw_id" +
         "     , s.dp_id" +
         "  from " + TABLE_PREFIX + "station s" +
         " where now() between s.beg_date and s.end_date";
-
     public static final String FREIGHTS = "select f.key, f.fr_group" +
         "  from " + TABLE_PREFIX + "freight f";
 

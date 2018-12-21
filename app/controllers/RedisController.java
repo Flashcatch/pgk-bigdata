@@ -3,7 +3,6 @@ package controllers;
 import akka.actor.ActorSystem;
 import com.cloudera.impala.jdbc41.DataSource;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import domain.bigdata.AttributeList;
@@ -241,13 +240,18 @@ public class RedisController extends Controller {
                     if (logs) {
                         log.debug(">> GETTING DURATION FROM CACHE <<");
                     }
-                    duration = (double)asyncCacheApi.get(keyBuilder.toString()).toCompletableFuture().join();
+
+                    Object cachedObj = asyncCacheApi.get(keyBuilder.toString()).toCompletableFuture().join();
+
+                    if (cachedObj == null) {
+                        duration = ABSENT_METRIX;
+                    }
+
+                    duration = (double)cachedObj;
+
                     if (logs) {
                         log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
                     }
-
-                    if (Double.valueOf(duration) == null)
-                        duration = ABSENT_METRIX;
 
                     calcLvl = groupingSets.getLevel();
 
@@ -457,15 +461,9 @@ public class RedisController extends Controller {
         if (value == null) {
             return supplyAsync(() -> notAcceptable("body"));
         }
-        if (value instanceof TextNode) {
-            String resultString = ((TextNode) value).asText();
-            return asyncCacheApi.set(key, resultString).thenApply(done -> created("Created"));
-        } else if (value instanceof JsonNode) {
-            JsonNode resultObject = value;
-            return asyncCacheApi.set(key, resultObject).thenApply(done -> created("Created"));
-        }
 
         return asyncCacheApi.set(key, value).thenApply(done -> created("Created"));
+
     }
 
     /**
@@ -478,7 +476,7 @@ public class RedisController extends Controller {
     }
 
     /**
-     * Remove all data from redis
+     * Remove all data from redis.
      *
      * @return Result
      */
