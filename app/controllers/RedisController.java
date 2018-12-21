@@ -185,6 +185,7 @@ public class RedisController extends Controller {
 
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
 
+                    /*
                     keyBuilder.append(key);
 
                     for (AttributeList attrList : attrs) {
@@ -230,7 +231,6 @@ public class RedisController extends Controller {
                     keyBuilder.setLength(0); // set length of buffer to 0
                     keyBuilder.trimToSize(); // trim the underlying buffer
 
-                    /*
                     //if (logs) {
                     //    log.debug("key={}", key);
                     // }
