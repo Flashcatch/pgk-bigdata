@@ -8,10 +8,7 @@ import com.typesafe.config.Config;
 import domain.bigdata.AttributeList;
 import domain.bigdata.BigDataQueryResponse;
 import domain.bigdata.BigDataQueryResponseList;
-import domain.bigdata.Freights;
 import domain.bigdata.GroupingSets;
-import domain.bigdata.SiCalculation;
-import domain.bigdata.Stations;
 import dto.bigdata.BigDataQueryDto;
 import dto.bigdata.BigDataQueryParamsDto;
 import io.swagger.annotations.Api;
@@ -161,13 +158,16 @@ public class RedisController extends Controller {
 
             response.setActualDate(body.getActualDate());
 
+            if (logs) {
+                log.debug("json loop starting..");
+            }
+
             for (BigDataQueryParamsDto params : metricsBlanks) {
 
                 long groupingSetId = -1;
                 double duration = ABSENT_METRIX;
                 String key = "";
                 StringBuilder keyBuilder = new StringBuilder();
-
 
                 int calcLvl = -1;
 
@@ -176,16 +176,10 @@ public class RedisController extends Controller {
                     groupingSetId = groupingSets.getGroupingSetId();
 
                     // фильтруем список атрибутов для текущего уровня
-                    //TODO: проверять, если меняется уровень, не фильтровать каждый раз
                     final long grSetId = groupingSetId;
                     List<AttributeList> attrs = attributeList.stream()
                         .filter(data -> data.getGroupingSetId() == grSetId)
                         .collect(Collectors.toList());
-
-                    if (logs) {
-                        log.debug("groupingSetId:{} attributes:{}", groupingSetId, attrs.toString());
-
-                    }
 
                     // Получаем станции и дороги
                     Long sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
@@ -240,14 +234,14 @@ public class RedisController extends Controller {
                     keyBuilder.setLength(0); // set length of buffer to 0
                     keyBuilder.trimToSize(); // trim the underlying buffer
 
-                    if (logs) {
+                    /*if (logs) {
                         log.debug("key={}", key);
                     }
 
                     // Проверяем json на полноту данных
                     if (logs) {
                         log.debug(">> GETTING DURATION FROM CACHE <<");
-                    }
+                    }*/
 
                     Object cachedObj = asyncCacheApi.get(key).toCompletableFuture().join();
 
@@ -257,9 +251,9 @@ public class RedisController extends Controller {
                         duration = (double) cachedObj;
                     }
 
-                    if (logs) {
+                    /*if (logs) {
                         log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
-                    }
+                    }*/
 
                     calcLvl = groupingSets.getLevel();
 
@@ -301,144 +295,7 @@ public class RedisController extends Controller {
         return completedFuture(ok(Json.toJson(response)));
     }
 
-    private CompletionStage<List<GroupingSets>> getGroupingSets(Connection connection, boolean refresh) {
-        log.debug("getting Grouping Sets, start:{}", now());
 
-        String key = "grsets";
-
-        if (refresh) {
-            asyncCacheApi.remove(key);
-        }
-
-        return asyncCacheApi.getOrElseUpdate(key, () -> supplyAsync(() -> transferGroupingSets(connection))).thenApply(res -> {
-            log.debug("getting Grouping Sets, end:{}", now());
-            return res;
-        });
-    }
-
-    private CompletionStage<List<Stations>> getStations(Connection connection, boolean refresh) {
-        log.debug("getting stations from cache, start:{}", now());
-        String key = "stations";
-
-        if (refresh) {
-            asyncCacheApi.remove(key);
-        }
-
-        log.debug("getting stations from cache, end:{}", now());
-        return asyncCacheApi.getOrElseUpdate(key, () -> supplyAsync(() -> {
-            log.debug("transferring stations to cache, start:{}", now());
-            List<Stations> stations = new ArrayList<>();
-            try (PreparedStatement st = connection.prepareStatement(STATIONS)) {
-                ResultSet resultSet = st.executeQuery();
-                while (resultSet.next()) {
-                    stations.add(Stations.builder()
-                        .stationId(resultSet.getLong(1))
-                        .rwId(resultSet.getLong(2))
-                        .dpId(resultSet.getLong(3)).build());
-                }
-            } catch (SQLException e) {
-                log.error("stations sql error:{} ", e.getMessage());
-                asyncCacheApi.remove(key);
-            }
-            log.debug("transferring stations to cache, end:{}", now());
-            return stations;
-        })).thenApply(res -> {
-            log.debug("getting stations, end:{}", now());
-            log.debug("<< getSiCalculationRedis < stations populated, size:{}", res.size());
-            return res;
-        });
-    }
-
-    private CompletionStage<List<Freights>> getFreights(Connection connection, boolean refresh) {
-        log.debug("getting freights from cache, start:{}", now());
-        String key = "freights";
-
-        if (refresh) {
-            asyncCacheApi.remove(key);
-        }
-
-        log.debug("getting freights from cache, end:{}", now());
-        return asyncCacheApi.getOrElseUpdate(key, () -> supplyAsync(() -> {
-            log.debug("transferring freights to cache, start:{}", now());
-            List<Freights> freights = new ArrayList<>();
-            try (PreparedStatement st = connection.prepareStatement(FREIGHTS)) {
-                ResultSet resultSet = st.executeQuery();
-                while (resultSet.next()) {
-                    freights.add(Freights.builder()
-                        .key(resultSet.getLong(1))
-                        .group(resultSet.getLong(2))
-                        .build());
-                }
-            } catch (SQLException e) {
-                log.error("freights sql error:{} ", e.getMessage());
-                asyncCacheApi.remove(key);
-            }
-            log.debug("transferring freights to cache, end:{}", now());
-            return freights;
-        })).thenApply(res -> {
-            log.debug("getting freights, end:{}", now());
-            log.debug("<< getSiCalculationRedis < freights populated, size:{}", res.size());
-            return res;
-        });
-    }
-
-    @SuppressWarnings("checkstyle:MagicNumberCheck")
-    private CompletionStage<List<SiCalculation>> getSiCalculationRedis(Connection connection, boolean refresh, GroupingSets groupingSets) {
-        log.debug("getting si_calculation with groupingSetId={}, start:{}", groupingSets, now());
-        String key = "sicalculation" + groupingSets.getGroupingSetId();
-
-        if (refresh) {
-            asyncCacheApi.remove(key);
-        }
-
-        return asyncCacheApi.getOrElseUpdate(key, () -> supplyAsync(() -> {
-            log.debug("transferring Si Calculation to cache, start:{}", now());
-            List<SiCalculation> siCalculations = new ArrayList<>();
-            try (PreparedStatement st = connection.prepareStatement(SICALCULATION_QUERY)) {
-                st.setLong(1, groupingSets.getGroupingSetId());
-                ResultSet resultSet = st.executeQuery();
-                while (resultSet.next()) {
-                    siCalculations.add(SiCalculation.builder()
-                        .groupingSetId(resultSet.getLong(1))
-                        .yearMonth(resultSet.getString(2))
-                        .sndCnId(resultSet.getLong(3))
-                        .rsvCnId(resultSet.getLong(4))
-                        .sndDpId(resultSet.getLong(5))
-                        .rsvDpId(resultSet.getLong(6))
-                        .sndRwId(resultSet.getLong(7))
-                        .rsvRwId(resultSet.getLong(8))
-                        .sndStId(resultSet.getLong(9))
-                        .rsvStId(resultSet.getLong(10))
-                        .sndOrgId(resultSet.getLong(11))
-                        .rsvOrgId(resultSet.getLong(12))
-                        .frId(resultSet.getLong(13))
-                        .frGroupId(resultSet.getLong(14))
-                        .isLoad(resultSet.getLong(15))
-                        .rodId(resultSet.getLong(16))
-                        .sendKindId(resultSet.getLong(17))
-                        .parkSign(resultSet.getLong(18))
-                        .routeSendSign(resultSet.getLong(19))
-                        .modelPropertyId(resultSet.getLong(20))
-                        .stId(resultSet.getLong(21))
-                        .clientId(resultSet.getLong(22))
-                        .vidPodgotovki(resultSet.getString(23))
-                        .vidZabrakovki(resultSet.getLong(24))
-                        .isTechSt(resultSet.getLong(25))
-                        .aggMedian(resultSet.getFloat(26))
-                        .build());
-                }
-            } catch (SQLException e) {
-                log.error("getSiCalculationRedis sql error:{} ", e.getMessage());
-                asyncCacheApi.remove(key);
-            }
-            log.debug("transferring SiCalculation to cache, end:{}", now());
-            return siCalculations;
-        })).thenApply(res -> {
-            log.debug("getting si_calculation with groupingSetId={}, end:{}", groupingSets.getGroupingSetId(), now());
-            log.debug("<< getSiCalculationRedis < SiCalculation populated, size:{}", res.size());
-            return res;
-        });
-    }
 
     /**
      * @param key key
