@@ -37,3 +37,8 @@ checkstyleXsltTransformations := {
 //(checkstyle in Compile) := (checkstyle in Compile).triggeredBy(compile in Compile).value
 
 updateOptions := updateOptions.value.withCachedResolution(true)
+
+// Make verbose tests
+testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
+unmanagedResourceDirectories in Compile += (baseDirectory.value / "conf")
+javaOptions in Test += "-Dconfig.resource=conf/app.dev.conf"
