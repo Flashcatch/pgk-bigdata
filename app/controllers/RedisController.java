@@ -207,10 +207,6 @@ public class RedisController extends Controller {
                             keyBuilder.append(":snd_dp_id:").append(sndDpId);
                         } else if ("RSV_DP_ID".equals(sqlCalcName)) {
                             keyBuilder.append(":rsv_dp_id:").append(rsvDpId);
-                        } else if ("SND_DP_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":snd_dp_id:").append(params.getSndDpId());
-                        } else if ("RSV_DP_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":rsv_dp_id:").append(params.getRsvDpId());
                         } else if ("SND_ST_ID".equals(sqlCalcName)) {
                             keyBuilder.append(":snd_st_id:").append(params.getSndStId());
                         } else if ("RSV_ST_ID".equals(sqlCalcName)) {
