@@ -168,6 +168,7 @@ public class RedisController extends Controller {
                 String key;
                 StringBuilder keyBuilder = new StringBuilder();
 
+
                 Integer calcLvl = -1;
 
                 for (GroupingSets groupingSets : groupingSetsList) {
@@ -260,6 +261,8 @@ public class RedisController extends Controller {
                     if (logs) {
                         log.debug("grset row processed");
                     }
+
+                    keyBuilder = null;
                 }
 
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
