@@ -177,8 +177,6 @@ public class RedisController extends Controller {
                         .filter(data -> data.getGroupingSetId() == grSetId)
                         .collect(Collectors.toList());
 
-                    /*
-
                     // Получаем станции и дороги
                     Long sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
                     Long sndDpId = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
@@ -232,6 +230,7 @@ public class RedisController extends Controller {
                     keyBuilder.setLength(0); // set length of buffer to 0
                     keyBuilder.trimToSize(); // trim the underlying buffer
 
+                    /*
                     //if (logs) {
                     //    log.debug("key={}", key);
                     // }
