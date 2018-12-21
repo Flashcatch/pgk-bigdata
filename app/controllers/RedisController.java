@@ -153,10 +153,6 @@ public class RedisController extends Controller {
 
             response.setActualDate(body.getActualDate());
 
-            if (logs) {
-                log.debug("json loop starting..");
-            }
-
             for (BigDataQueryParamsDto params : metricsBlanks) {
 
                 long groupingSetId = -1;
@@ -166,6 +162,11 @@ public class RedisController extends Controller {
 
                 int calcLvl = -1;
 
+                // Получаем станции и дороги
+                Long sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
+                Long sndDpId = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
+                Long rsvRwId = (Long) asyncCacheApi.get("station:rw:" + params.getRsvStId()).toCompletableFuture().join();
+                Long rsvDpId = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
 
                 for (GroupingSets groupingSets : groupingSetsList) {
 
@@ -176,12 +177,6 @@ public class RedisController extends Controller {
                     List<AttributeList> attrs = attributeList.stream()
                         .filter(data -> data.getGroupingSetId() == grSetId)
                         .collect(Collectors.toList());
-
-                    // Получаем станции и дороги
-                    Long sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
-                    Long sndDpId = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
-                    Long rsvRwId = (Long) asyncCacheApi.get("station:rw:" + params.getRsvStId()).toCompletableFuture().join();
-                    Long rsvDpId = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
 
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
 
