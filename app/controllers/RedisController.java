@@ -7,10 +7,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import domain.bigdata.*;
+import domain.bigdata.AttributeList;
+import domain.bigdata.BigDataQueryResponse;
+import domain.bigdata.BigDataQueryResponseList;
+import domain.bigdata.Freights;
+import domain.bigdata.GroupingSets;
+import domain.bigdata.SiCalculation;
+import domain.bigdata.Stations;
 import dto.bigdata.BigDataQueryDto;
 import dto.bigdata.BigDataQueryParamsDto;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import play.cache.AsyncCacheApi;
 import play.cache.NamedCache;
@@ -33,7 +43,14 @@ import java.util.stream.Collectors;
 import static java.time.LocalDateTime.now;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static utils.Constants.*;
+import static utils.Constants.ABSENT_METRIX;
+import static utils.Constants.ATTRIBUTE_LIST;
+import static utils.Constants.FREIGHTS;
+import static utils.Constants.GROUPING_SET;
+import static utils.Constants.IMPALA_URL;
+import static utils.Constants.NTH_LINE;
+import static utils.Constants.SICALCULATION_QUERY;
+import static utils.Constants.STATIONS;
 
 /**
  * This controller contains an action to handle HTTP requests to the application's home page.
@@ -62,6 +79,13 @@ public class RedisController extends Controller {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
         this.config = config;
+    }
+
+    /**
+     * @return stub
+     */
+    public Result index() {
+        return ok("Application is ready. ");
     }
 
     /**

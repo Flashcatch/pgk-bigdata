@@ -2,16 +2,11 @@ GET           /docs/                                                controllers.
 GET           /docs/swagger.json                                    controllers.ApiHelpController.getResources
 GET           /docs/*file                                           controllers.Assets.at(path="/public/swagger-ui",file)
 
+GET           /                                                     controllers.Default.redirect(to = "/docs/")
+
 GET           /v1/impala/reload                                     controllers.RedisController.reloadKuduToRedis
 POST          /v1/redis/sicalculation                               controllers.RedisController.getSiCalculationRedis
 GET           /v1/redis/:key                                        controllers.RedisController.get(key: String)
 POST          /v1/redis/:key                                        controllers.RedisController.set(key: String)
 DELETE        /v1/redis/:key                                        controllers.RedisController.remove(key:String)
 DELETE        /v1/invalidate/redis                                  controllers.RedisController.removeAll()
-
-GET           /v1/bigdata/query/:id/id                              controllers.BigDataController.getBigDataQueryById(id: Long)
-GET           /v1/kudu                                              controllers.BigDataController.kuduDirect
-GET           /v1/kudu/cached                                       controllers.BigDataController.kuduCached
-GET           /v1/bigdata/queries                                   controllers.BigDataController.getBigDataQueries
-GET           /v1/bigdata/query/:key/key                            controllers.BigDataController.getBigDataQueryByKey(key: String)
-GET           /v1/postresql/reload                                  controllers.BigDataController.kuduToPostgreSQL
