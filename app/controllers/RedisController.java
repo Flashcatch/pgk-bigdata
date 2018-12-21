@@ -237,7 +237,8 @@ public class RedisController extends Controller {
 
                     // Ключ построен
                     key = keyBuilder.toString();
-                    keyBuilder = null;
+                    keyBuilder.setLength(0); // set length of buffer to 0
+                    keyBuilder.trimToSize(); // trim the underlying buffer
 
                     if (logs) {
                         log.debug("key={}", key);
@@ -248,9 +249,9 @@ public class RedisController extends Controller {
                         log.debug(">> GETTING DURATION FROM CACHE <<");
                     }
 
-                    Object cachedObj = asyncCacheApi.get(keyBuilder.toString()).toCompletableFuture().join();
+                    Object cachedObj = asyncCacheApi.get(key).toCompletableFuture().join();
 
-                    if (cachedObj.equals(null)) {
+                    if (cachedObj == null) {
                         duration = ABSENT_METRIX;
                     } else {
                         duration = (double) cachedObj;
