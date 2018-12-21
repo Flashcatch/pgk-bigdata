@@ -245,9 +245,9 @@ public class RedisController extends Controller {
 
                     if (cachedObj == null) {
                         duration = ABSENT_METRIX;
+                    } else {
+                        duration = (double) cachedObj;
                     }
-
-                    duration = (double)cachedObj;
 
                     if (logs) {
                         log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
