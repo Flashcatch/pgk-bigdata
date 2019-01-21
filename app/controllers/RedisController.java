@@ -142,7 +142,6 @@ public class RedisController extends Controller {
             }
 
             // Цикл по json данным
-
             List<BigDataQueryParamsDto> metricsBlanks = null;
 
             if (body.getMetricsBlanks() != null) {
@@ -164,13 +163,26 @@ public class RedisController extends Controller {
 
                 int calcLvl = -1;
 
-                // Получаем станции и дороги
-                Long sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
-                Long sndDpId = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
-                Long rsvRwId = (Long) asyncCacheApi.get("station:rw:" + params.getRsvStId()).toCompletableFuture().join();
-                Long rsvDpId = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
+                List<GroupingSets> grSets = groupingSetsList.stream()
+                    .filter(data -> data.getStatIndicatorId() == params.getId())
+                    .collect(Collectors.toList());
 
-                for (GroupingSets groupingSets : groupingSetsList) {
+                // Получаем отделения и дороги по id станции
+                Long sndRwId = 0L;
+                Long sndDpId = 0L;
+                Long rsvRwId = 0L;
+                Long rsvDpId = 0L;
+
+                if (params.getId() == 1 || params.getId() == 2 || params.getId() == 13 || params.getId() == 14) {
+
+                    sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
+                    sndDpId = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
+                    rsvRwId = (Long) asyncCacheApi.get("station:rw:" + params.getRsvStId()).toCompletableFuture().join();
+                    rsvDpId = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
+
+                }
+
+                for (GroupingSets groupingSets : grSets) {
 
                     groupingSetId = groupingSets.getGroupingSetId();
 
@@ -183,19 +195,25 @@ public class RedisController extends Controller {
                     key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
                     keyBuilder.append(key);
 
+                    // TODO: ПРОВЕРИТЬ ЧТО ВО ВХОДНОМ JSON ЕСТЬ ВСЕ ПОЛЯ, УКАЗАННЫЕ В ATTRIBUTE_LIST !
                     for (AttributeList attrList : attrs) {
 
                         String sqlCalcName = attrList.getSqlCalcName();
 
-                        if ("SND_RW_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":snd_rw_id:").append(sndRwId);
-                        } else if ("RSV_RW_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":rsv_rw_id:").append(rsvRwId);
-                        } else if ("SND_DP_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":snd_dp_id:").append(sndDpId);
-                        } else if ("RSV_DP_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":rsv_dp_id:").append(rsvDpId);
-                        } else if ("SND_ST_ID".equals(sqlCalcName)) {
+                        if (params.getId() == 1 || params.getId() == 2 || params.getId() == 13 || params.getId() == 14) {
+
+                            if ("SND_RW_ID".equals(sqlCalcName)) {
+                                keyBuilder.append(":snd_rw_id:").append(sndRwId);
+                            } else if ("RSV_RW_ID".equals(sqlCalcName)) {
+                                keyBuilder.append(":rsv_rw_id:").append(rsvRwId);
+                            } else if ("SND_DP_ID".equals(sqlCalcName)) {
+                                keyBuilder.append(":snd_dp_id:").append(sndDpId);
+                            } else if ("RSV_DP_ID".equals(sqlCalcName)) {
+                                keyBuilder.append(":rsv_dp_id:").append(rsvDpId);
+                            }
+                        }
+
+                        if ("SND_ST_ID".equals(sqlCalcName)) {
                             keyBuilder.append(":snd_st_id:").append(params.getSndStId());
                         } else if ("RSV_ST_ID".equals(sqlCalcName)) {
                             keyBuilder.append(":rsv_st_id:").append(params.getRsvStId());
@@ -217,8 +235,18 @@ public class RedisController extends Controller {
                             keyBuilder.append(":vid_zabrakovki:").append(params.getVidZabrakovki());
                         } else if ("IS_TECH_ST".equals(sqlCalcName)) {
                             keyBuilder.append(":is_tech_st:").append(params.getIsTechSt());
+                        } else if ("ISLOAD".equals(sqlCalcName)) {
+                            keyBuilder.append(":is_load:").append(params.getIsLoad());
+                        } else if ("MODEL_PROPERTY_ID".equals(sqlCalcName)) {
+                            keyBuilder.append(":model_property_id:").append(params.getModelPropertyId());
+                        } else if ("ST_ID".equals(sqlCalcName)) {
+                            keyBuilder.append(":st_id_disl:").append(params.getStIdDisl());
                         }
 
+                        if ((params.getId() == 3 || params.getId() == 4 || params.getId() == 6 || params.getId() == 7 || params.getId() == 15) && ("FR_GROUP_ID".equals(sqlCalcName))) {
+                            Long frGrId = (Long) asyncCacheApi.get("freight:gr:" + params.getFrId()).toCompletableFuture().join();
+                            keyBuilder.append(":fr_group_id:").append(frGrId);
+                        }
                     }
 
                     // Ключ построен
@@ -257,13 +285,14 @@ public class RedisController extends Controller {
 
                 } // Прошли все уровни
 
+                // TODO: ДОБАВИТЬ ВСЕ ПОЛЯ ИЗ ВХОДНОГО JSON
                 BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
                     .id(params.getId())
                     .duration(String.format("%1$,.2f", duration))
-                    .sndStId(params.getSndStId())
-                    .rsvStId(params.getRsvStId())
-                    .rodId(params.getRodId())
-                    .routeSendSign(params.getRouteSendSign())
+                    //.sndStId(params.getSndStId())
+                    //.rsvStId(params.getRsvStId())
+                    //.rodId(params.getRodId())
+                    //.routeSendSign(params.getRouteSendSign())
                     .calcLevel(calcLvl)
                     .build();
 

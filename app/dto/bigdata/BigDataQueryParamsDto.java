@@ -67,5 +67,11 @@ public class BigDataQueryParamsDto {
     @ApiModelProperty(value = "Признак технической станции")
     @JsonProperty(value = "is_tech_st")
     private Integer isTechSt;
+    @ApiModelProperty(value = "model_property_id")
+    @JsonProperty(value = "model_property_id")
+    private Integer modelPropertyId;
+    @ApiModelProperty(value = "is_load")
+    @JsonProperty(value = "is_load")
+    private Integer isLoad;
 
 }
