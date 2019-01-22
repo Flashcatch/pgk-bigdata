@@ -220,11 +220,15 @@ public class RedisController extends Controller {
                         } else if ("SND_ORG_ID".equals(sqlCalcName)) {
                             keyBuilder.append(":snd_org_id:").append(params.getSndOrgId());
                         } else if ("RSV_ORG_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":rsv_org_id:").append(params.getRsvOrgId());
+                            if (params.getRsvOrgId() != null) {
+                                keyBuilder.append(":rsv_org_id:").append(params.getRsvOrgId());
+                            }
                         } else if ("FR_ID".equals(sqlCalcName)) {
                             keyBuilder.append(":fr_id:").append(params.getFrId());
                         } else if ("ROD_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":rod_id:").append(params.getRodId());
+                            if (params.getRodId() != null) {
+                                keyBuilder.append(":rod_id:").append(params.getRodId());
+                            }
                         } else if ("ROUTE_SEND_SIGN".equals(sqlCalcName)) {
                             keyBuilder.append(":route_send_sign:").append(params.getRouteSendSign());
                         } else if ("CLIENT_ID".equals(sqlCalcName)) {
@@ -236,11 +240,11 @@ public class RedisController extends Controller {
                         } else if ("IS_TECH_ST".equals(sqlCalcName)) {
                             keyBuilder.append(":is_tech_st:").append(params.getIsTechSt());
                         } else if ("ISLOAD".equals(sqlCalcName)) {
-                            keyBuilder.append(":is_load:").append(params.getIsLoad());
+                            keyBuilder.append(":isload:").append(params.getIsLoad());
                         } else if ("MODEL_PROPERTY_ID".equals(sqlCalcName)) {
                             keyBuilder.append(":model_property_id:").append(params.getModelPropertyId());
                         } else if ("ST_ID".equals(sqlCalcName)) {
-                            keyBuilder.append(":st_id_disl:").append(params.getStIdDisl());
+                            keyBuilder.append(":st_id:").append(params.getStIdDisl());
                         }
 
                         if ((params.getId() == 3 || params.getId() == 4 || params.getId() == 6 || params.getId() == 7 || params.getId() == 15) && ("FR_GROUP_ID".equals(sqlCalcName))) {
@@ -254,9 +258,9 @@ public class RedisController extends Controller {
                     keyBuilder.setLength(0); // set length of buffer to 0
                     keyBuilder.trimToSize(); // trim the underlying buffer
 
-                    //if (logs) {
-                    //    log.debug("key={}", key);
-                    // }
+                    if (logs) {
+                        log.debug("key={}", key);
+                    }
 
                     // Проверяем json на полноту данных
                     //if (logs) {
