@@ -202,52 +202,52 @@ public class RedisController extends Controller {
 
                         if (params.getId() == 1 || params.getId() == 2 || params.getId() == 13 || params.getId() == 14) {
 
-                            if ("SND_RW_ID".equals(sqlCalcName)) {
+                            if ("SND_RW_ID".equals(sqlCalcName) && sndRwId != null) {
                                 keyBuilder.append(":snd_rw_id:").append(sndRwId);
-                            } else if ("RSV_RW_ID".equals(sqlCalcName)) {
+                            } else if ("RSV_RW_ID".equals(sqlCalcName) && rsvRwId != null) {
                                 keyBuilder.append(":rsv_rw_id:").append(rsvRwId);
-                            } else if ("SND_DP_ID".equals(sqlCalcName)) {
+                            } else if ("SND_DP_ID".equals(sqlCalcName) && sndDpId != null) {
                                 keyBuilder.append(":snd_dp_id:").append(sndDpId);
-                            } else if ("RSV_DP_ID".equals(sqlCalcName)) {
+                            } else if ("RSV_DP_ID".equals(sqlCalcName) && rsvDpId != null) {
                                 keyBuilder.append(":rsv_dp_id:").append(rsvDpId);
                             }
                         }
 
-                        if ("SND_ST_ID".equals(sqlCalcName)) {
+                        if ("SND_ST_ID".equals(sqlCalcName) && params.getSndStId() != null) {
                             keyBuilder.append(":snd_st_id:").append(params.getSndStId());
-                        } else if ("RSV_ST_ID".equals(sqlCalcName)) {
+                        } else if ("RSV_ST_ID".equals(sqlCalcName) && params.getRsvStId() != null) {
                             keyBuilder.append(":rsv_st_id:").append(params.getRsvStId());
-                        } else if ("SND_ORG_ID".equals(sqlCalcName)) {
+                        } else if ("SND_ORG_ID".equals(sqlCalcName) && params.getSndOrgId() != null) {
                             keyBuilder.append(":snd_org_id:").append(params.getSndOrgId());
-                        } else if ("RSV_ORG_ID".equals(sqlCalcName)) {
-                            if (params.getRsvOrgId() != null) {
-                                keyBuilder.append(":rsv_org_id:").append(params.getRsvOrgId());
-                            }
-                        } else if ("FR_ID".equals(sqlCalcName)) {
+                        } else if ("RSV_ORG_ID".equals(sqlCalcName) && params.getRsvOrgId() != null) {
+                            keyBuilder.append(":rsv_org_id:").append(params.getRsvOrgId());
+                        } else if ("FR_ID".equals(sqlCalcName) && params.getFrId() != null) {
                             keyBuilder.append(":fr_id:").append(params.getFrId());
-                        } else if ("ROD_ID".equals(sqlCalcName)) {
-                            if (params.getRodId() != null) {
-                                keyBuilder.append(":rod_id:").append(params.getRodId());
-                            }
-                        } else if ("ROUTE_SEND_SIGN".equals(sqlCalcName)) {
+                        } else if ("ROD_ID".equals(sqlCalcName) && params.getRodId() != null) {
+                            keyBuilder.append(":rod_id:").append(params.getRodId());
+                        } else if ("ROUTE_SEND_SIGN".equals(sqlCalcName) && params.getRouteSendSign() != null) {
                             keyBuilder.append(":route_send_sign:").append(params.getRouteSendSign());
-                        } else if ("CLIENT_ID".equals(sqlCalcName)) {
+                        } else if ("CLIENT_ID".equals(sqlCalcName) && params.getClientId() != null) {
                             keyBuilder.append(":client_id:").append(params.getClientId());
-                        } else if ("VID_PODGOTOVKI".equals(sqlCalcName)) {
+                        } else if ("VID_PODGOTOVKI".equals(sqlCalcName) && params.getVidPodgotovki() != null) {
                             keyBuilder.append(":vid_podgotovki:").append(params.getVidPodgotovki());
-                        } else if ("VID_ZABRAKOVKI".equals(sqlCalcName)) {
+                        } else if ("VID_ZABRAKOVKI".equals(sqlCalcName) && params.getVidZabrakovki() != null) {
                             keyBuilder.append(":vid_zabrakovki:").append(params.getVidZabrakovki());
-                        } else if ("IS_TECH_ST".equals(sqlCalcName)) {
+                        } else if ("IS_TECH_ST".equals(sqlCalcName) && params.getIsTechSt() != null) {
                             keyBuilder.append(":is_tech_st:").append(params.getIsTechSt());
-                        } else if ("ISLOAD".equals(sqlCalcName)) {
+                        } else if ("ISLOAD".equals(sqlCalcName) && params.getIsLoad() != null) {
                             keyBuilder.append(":isload:").append(params.getIsLoad());
-                        } else if ("MODEL_PROPERTY_ID".equals(sqlCalcName)) {
+                        } else if ("MODEL_PROPERTY_ID".equals(sqlCalcName) && params.getModelPropertyId() != null) {
                             keyBuilder.append(":model_property_id:").append(params.getModelPropertyId());
-                        } else if ("ST_ID".equals(sqlCalcName)) {
+                        } else if ("ST_ID".equals(sqlCalcName) && params.getStIdDisl() != null) {
                             keyBuilder.append(":st_id:").append(params.getStIdDisl());
                         }
 
-                        if ((params.getId() == 3 || params.getId() == 4 || params.getId() == 6 || params.getId() == 7 || params.getId() == 15) && ("FR_GROUP_ID".equals(sqlCalcName))) {
+                        if ((params.getId() == 3 ||
+                             params.getId() == 4 ||
+                             params.getId() == 6 ||
+                             params.getId() == 7 ||
+                             params.getId() == 15) && ("FR_GROUP_ID".equals(sqlCalcName) && params.getFrId() != null)) {
                             Long frGrId = (Long) asyncCacheApi.get("freight:gr:" + params.getFrId()).toCompletableFuture().join();
                             keyBuilder.append(":fr_group_id:").append(frGrId);
                         }
