@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import play.cache.AsyncCacheApi;
+import play.cache.Cached;
 import play.cache.NamedCache;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -111,6 +112,7 @@ public class RedisController extends Controller {
             )
     })
     @SuppressWarnings("unchecked")
+    @Cached(key = "siCalcResults", duration = 15)
     public CompletionStage<Result> getSiCalculationRedis() {
 
         boolean logs = Boolean.parseBoolean(request().getQueryString("logs"));
