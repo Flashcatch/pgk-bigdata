@@ -122,6 +122,10 @@ public class RedisController extends Controller {
         BigDataQueryResponseList response = new BigDataQueryResponseList();
         List<BigDataQueryResponse> responseList = new ArrayList<>();
 
+        //log.debug("<< getSiCalculationRedis < Processing request data");
+        JsonNode json = request().body().asJson();
+        //log.debug("<< getSiCalculationRedis < json: {}", json);
+
         return supplyAsync(() -> {
             DataSource ds = new DataSource();
             ds.setURL(IMPALA_URL + config.getString("impala.host") + ":" + config.getString("impala.port"));
@@ -135,10 +139,6 @@ public class RedisController extends Controller {
                 if (logs) {
                     log.debug("grsets populated");
                 }
-
-                //log.debug("<< getSiCalculationRedis < Processing request data");
-                JsonNode json = request().body().asJson();
-                //log.debug("<< getSiCalculationRedis < json: {}", json);
 
                 BigDataQueryDto body = Json.fromJson(json, BigDataQueryDto.class);
                 //log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
