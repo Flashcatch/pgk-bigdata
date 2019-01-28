@@ -106,9 +106,12 @@ public class RedisController extends Controller {
     })
     @SuppressWarnings("unchecked")
     public CompletionStage<Result> getSiCalculationRedis() {
-        log.debug("<< getSiCalculationRedis < start, now:{}", now());
 
         boolean logs = Boolean.parseBoolean(request().getQueryString("logs"));
+
+        if (logs) {
+            log.debug("<< getSiCalculationRedis < start, now:{}", now());
+        }
 
         BigDataQueryResponseList response = new BigDataQueryResponseList();
         List<BigDataQueryResponse> responseList = new ArrayList<>();
@@ -152,7 +155,9 @@ public class RedisController extends Controller {
 
             response.setActualDate(body.getActualDate());
 
-            log.debug("json elements:{}", metricsBlanks.size());
+            if (logs) {
+                log.debug("json elements:{}", metricsBlanks.size());
+            }
 
             for (BigDataQueryParamsDto params : metricsBlanks) {
 
@@ -322,7 +327,11 @@ public class RedisController extends Controller {
             log.error("getStatIndicators sql error:{} ", e.getMessage());
         }
         response.setMetrics(responseList);
-        log.debug("<< getSiCalculationRedis < end, now:{}", now());
+
+        if (logs) {
+            log.debug("<< getSiCalculationRedis < end, now:{}", now());
+        }
+
         return completedFuture(ok(Json.toJson(response)));
     }
 
