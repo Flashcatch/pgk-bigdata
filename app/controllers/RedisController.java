@@ -59,6 +59,7 @@ import static utils.Constants.STATIONS;
 @Api(value = "Redis контроллер", produces = "application/json")
 public class RedisController extends Controller {
 
+
     @NamedCache("local")
     private final AsyncCacheApi asyncCacheApi;
 
@@ -114,234 +115,235 @@ public class RedisController extends Controller {
     @SuppressWarnings("unchecked")
     @Cached(key = "siCalcResults", duration = 15)
     public CompletionStage<Result> getSiCalculationRedis() {
+        return asyncCacheApi.getOrElseUpdate("siCalcResults", () -> {
+            log.debug("<< not in cache, executing");
+            boolean logs = Boolean.parseBoolean(request().getQueryString("logs"));
 
-        boolean logs = Boolean.parseBoolean(request().getQueryString("logs"));
+            if (logs) {
+                log.debug("<< getSiCalculationRedis < start, now:{}", now());
+            }
 
-        if (logs) {
-            log.debug("<< getSiCalculationRedis < start, now:{}", now());
-        }
+            BigDataQueryResponseList response = new BigDataQueryResponseList();
+            List<BigDataQueryResponse> responseList = new ArrayList<>();
 
-        BigDataQueryResponseList response = new BigDataQueryResponseList();
-        List<BigDataQueryResponse> responseList = new ArrayList<>();
+            //log.debug("<< getSiCalculationRedis < Processing request data");
+            JsonNode json = request().body().asJson();
+            //log.debug("<< getSiCalculationRedis < json: {}", json);
 
-        //log.debug("<< getSiCalculationRedis < Processing request data");
-        JsonNode json = request().body().asJson();
-        //log.debug("<< getSiCalculationRedis < json: {}", json);
+            return supplyAsync(() -> {
+                DataSource ds = new DataSource();
+                ds.setURL(IMPALA_URL + config.getString("impala.host") + ":" + config.getString("impala.port"));
 
-        return supplyAsync(() -> {
-            DataSource ds = new DataSource();
-            ds.setURL(IMPALA_URL + config.getString("impala.host") + ":" + config.getString("impala.port"));
+                try (Connection connection = ds.getConnection()) {
 
-            try (Connection connection = ds.getConnection()) {
+                    // По ключу grsets получаем grouping_set_id, и уровень метрики
+                    List<GroupingSets> groupingSetsList = (List<GroupingSets>) asyncCacheApi.get("grsets")
+                            .toCompletableFuture().join();
 
-                // По ключу grsets получаем grouping_set_id, и уровень метрики
-                List<GroupingSets> groupingSetsList = (List<GroupingSets>) asyncCacheApi.get("grsets")
-                    .toCompletableFuture().join();
-
-                if (logs) {
-                    log.debug("grsets populated");
-                }
-
-                BigDataQueryDto body = Json.fromJson(json, BigDataQueryDto.class);
-                //log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
-
-                // Получаем список полей
-                List<AttributeList> attributeList = getAttributeList(connection, false, logs)
-                    .toCompletableFuture().join();
-
-                if (logs) {
-                    log.debug("attributeList populated");
-                }
-
-                // Цикл по json данным
-                List<BigDataQueryParamsDto> metricsBlanks = null;
-
-                if (body.getMetricsBlanks() != null) {
-                    metricsBlanks = body.getMetricsBlanks();
-                } else {
-                    return completedFuture(notAcceptable("empty json!"));
-                }
-
-                response.setActualDate(body.getActualDate());
-
-                if (logs) {
-                    log.debug("json elements:{}", metricsBlanks.size());
-                }
-
-                for (BigDataQueryParamsDto params : metricsBlanks) {
-
-                    long groupingSetId = -1;
-                    double duration = ABSENT_METRIX;
-                    String key = "";
-                    StringBuilder keyBuilder = new StringBuilder();
-
-                    int calcLvl = -1;
-
-                    List<GroupingSets> grSets = groupingSetsList.stream()
-                        .filter(data -> data.getStatIndicatorId() == params.getId())
-                        .collect(Collectors.toList());
-
-                    // Получаем отделения и дороги по id станции
-                    Long sndRwId = 0L;
-                    Long sndDpId = 0L;
-                    Long rsvRwId = 0L;
-                    Long rsvDpId = 0L;
-
-                    if (params.getId() == 1 || params.getId() == 2 || params.getId() == 13 || params.getId() == 14) {
-
-                        sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
-                        sndDpId = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
-                        rsvRwId = (Long) asyncCacheApi.get("station:rw:" + params.getRsvStId()).toCompletableFuture().join();
-                        rsvDpId = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
-
+                    if (logs) {
+                        log.debug("grsets populated");
                     }
 
-                    for (GroupingSets groupingSets : grSets) {
+                    BigDataQueryDto body = Json.fromJson(json, BigDataQueryDto.class);
+                    //log.debug("<< getSiCalculationRedis < json parsed,body: {}", body);
 
-                        groupingSetId = groupingSets.getGroupingSetId();
+                    // Получаем список полей
+                    List<AttributeList> attributeList = getAttributeList(connection, false, logs)
+                            .toCompletableFuture().join();
 
-                        // фильтруем список атрибутов для текущего уровня
-                        final long grSetId = groupingSetId;
-                        List<AttributeList> attrs = attributeList.stream()
-                            .filter(data -> data.getGroupingSetId() == grSetId)
-                            .collect(Collectors.toList());
+                    if (logs) {
+                        log.debug("attributeList populated");
+                    }
 
-                        key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
-                        keyBuilder.append(key);
+                    // Цикл по json данным
+                    List<BigDataQueryParamsDto> metricsBlanks = null;
 
-                        // TODO: ПРОВЕРИТЬ ЧТО ВО ВХОДНОМ JSON ЕСТЬ ВСЕ ПОЛЯ, УКАЗАННЫЕ В ATTRIBUTE_LIST !
-                        for (AttributeList attrList : attrs) {
+                    if (body.getMetricsBlanks() != null) {
+                        metricsBlanks = body.getMetricsBlanks();
+                    } else {
+                        return completedFuture(notAcceptable("empty json!"));
+                    }
 
-                            String sqlCalcName = attrList.getSqlCalcName();
+                    response.setActualDate(body.getActualDate());
 
-                            if (params.getId() == 1 || params.getId() == 2 || params.getId() == 13 || params.getId() == 14) {
+                    if (logs) {
+                        log.debug("json elements:{}", metricsBlanks.size());
+                    }
 
-                                if ("SND_RW_ID".equals(sqlCalcName) && sndRwId != null) {
-                                    keyBuilder.append(":snd_rw_id:").append(sndRwId);
-                                } else if ("RSV_RW_ID".equals(sqlCalcName) && rsvRwId != null) {
-                                    keyBuilder.append(":rsv_rw_id:").append(rsvRwId);
-                                } else if ("SND_DP_ID".equals(sqlCalcName) && sndDpId != null) {
-                                    keyBuilder.append(":snd_dp_id:").append(sndDpId);
-                                } else if ("RSV_DP_ID".equals(sqlCalcName) && rsvDpId != null) {
-                                    keyBuilder.append(":rsv_dp_id:").append(rsvDpId);
+                    for (BigDataQueryParamsDto params : metricsBlanks) {
+
+                        long groupingSetId = -1;
+                        double duration = ABSENT_METRIX;
+                        String key = "";
+                        StringBuilder keyBuilder = new StringBuilder();
+
+                        int calcLvl = -1;
+
+                        List<GroupingSets> grSets = groupingSetsList.stream()
+                                .filter(data -> data.getStatIndicatorId() == params.getId())
+                                .collect(Collectors.toList());
+
+                        // Получаем отделения и дороги по id станции
+                        Long sndRwId = 0L;
+                        Long sndDpId = 0L;
+                        Long rsvRwId = 0L;
+                        Long rsvDpId = 0L;
+
+                        if (params.getId() == 1 || params.getId() == 2 || params.getId() == 13 || params.getId() == 14) {
+
+                            sndRwId = (Long) asyncCacheApi.get("station:rw:" + params.getSndStId()).toCompletableFuture().join();
+                            sndDpId = (Long) asyncCacheApi.get("station:dp:" + params.getSndStId()).toCompletableFuture().join();
+                            rsvRwId = (Long) asyncCacheApi.get("station:rw:" + params.getRsvStId()).toCompletableFuture().join();
+                            rsvDpId = (Long) asyncCacheApi.get("station:dp:" + params.getRsvStId()).toCompletableFuture().join();
+
+                        }
+
+                        for (GroupingSets groupingSets : grSets) {
+
+                            groupingSetId = groupingSets.getGroupingSetId();
+
+                            // фильтруем список атрибутов для текущего уровня
+                            final long grSetId = groupingSetId;
+                            List<AttributeList> attrs = attributeList.stream()
+                                    .filter(data -> data.getGroupingSetId() == grSetId)
+                                    .collect(Collectors.toList());
+
+                            key = "sicalculation:grouping_set_id:" + groupingSetId + ":year_month:" + body.getActualDate();
+                            keyBuilder.append(key);
+
+                            // TODO: ПРОВЕРИТЬ ЧТО ВО ВХОДНОМ JSON ЕСТЬ ВСЕ ПОЛЯ, УКАЗАННЫЕ В ATTRIBUTE_LIST !
+                            for (AttributeList attrList : attrs) {
+
+                                String sqlCalcName = attrList.getSqlCalcName();
+
+                                if (params.getId() == 1 || params.getId() == 2 || params.getId() == 13 || params.getId() == 14) {
+
+                                    if ("SND_RW_ID".equals(sqlCalcName) && sndRwId != null) {
+                                        keyBuilder.append(":snd_rw_id:").append(sndRwId);
+                                    } else if ("RSV_RW_ID".equals(sqlCalcName) && rsvRwId != null) {
+                                        keyBuilder.append(":rsv_rw_id:").append(rsvRwId);
+                                    } else if ("SND_DP_ID".equals(sqlCalcName) && sndDpId != null) {
+                                        keyBuilder.append(":snd_dp_id:").append(sndDpId);
+                                    } else if ("RSV_DP_ID".equals(sqlCalcName) && rsvDpId != null) {
+                                        keyBuilder.append(":rsv_dp_id:").append(rsvDpId);
+                                    }
+                                }
+
+                                if ("SND_ST_ID".equals(sqlCalcName) && params.getSndStId() != null) {
+                                    keyBuilder.append(":snd_st_id:").append(params.getSndStId());
+                                } else if ("RSV_ST_ID".equals(sqlCalcName) && params.getRsvStId() != null) {
+                                    keyBuilder.append(":rsv_st_id:").append(params.getRsvStId());
+                                } else if ("SND_ORG_ID".equals(sqlCalcName) && params.getSndOrgId() != null) {
+                                    keyBuilder.append(":snd_org_id:").append(params.getSndOrgId());
+                                } else if ("RSV_ORG_ID".equals(sqlCalcName) && params.getRsvOrgId() != null) {
+                                    keyBuilder.append(":rsv_org_id:").append(params.getRsvOrgId());
+                                } else if ("FR_ID".equals(sqlCalcName) && params.getFrId() != null) {
+                                    keyBuilder.append(":fr_id:").append(params.getFrId());
+                                } else if ("ROD_ID".equals(sqlCalcName) && params.getRodId() != null) {
+                                    keyBuilder.append(":rod_id:").append(params.getRodId());
+                                } else if ("ROUTE_SEND_SIGN".equals(sqlCalcName) && params.getRouteSendSign() != null) {
+                                    keyBuilder.append(":route_send_sign:").append(params.getRouteSendSign());
+                                } else if ("CLIENT_ID".equals(sqlCalcName) && params.getClientId() != null) {
+                                    keyBuilder.append(":client_id:").append(params.getClientId());
+                                } else if ("VID_PODGOTOVKI".equals(sqlCalcName) && params.getVidPodgotovki() != null) {
+                                    keyBuilder.append(":vid_podgotovki:").append(params.getVidPodgotovki());
+                                } else if ("VID_ZABRAKOVKI".equals(sqlCalcName) && params.getVidZabrakovki() != null) {
+                                    keyBuilder.append(":vid_zabrakovki:").append(params.getVidZabrakovki());
+                                } else if ("IS_TECH_ST".equals(sqlCalcName) && params.getIsTechSt() != null) {
+                                    keyBuilder.append(":is_tech_st:").append(params.getIsTechSt());
+                                } else if ("ISLOAD".equals(sqlCalcName) && params.getIsLoad() != null) {
+                                    keyBuilder.append(":isload:").append(params.getIsLoad());
+                                } else if ("MODEL_PROPERTY_ID".equals(sqlCalcName) && params.getModelPropertyId() != null) {
+                                    keyBuilder.append(":model_property_id:").append(params.getModelPropertyId());
+                                } else if ("ST_ID".equals(sqlCalcName) && params.getStIdDisl() != null) {
+                                    keyBuilder.append(":st_id:").append(params.getStIdDisl());
+                                }
+
+                                if ((params.getId() == 3 ||
+                                        params.getId() == 4 ||
+                                        params.getId() == 6 ||
+                                        params.getId() == 7 ||
+                                        params.getId() == 15) && ("FR_GROUP_ID".equals(sqlCalcName) && params.getFrId() != null)) {
+                                    Long frGrId = (Long) asyncCacheApi.get("freight:gr:" + params.getFrId()).toCompletableFuture().join();
+                                    keyBuilder.append(":fr_group_id:").append(frGrId);
                                 }
                             }
 
-                            if ("SND_ST_ID".equals(sqlCalcName) && params.getSndStId() != null) {
-                                keyBuilder.append(":snd_st_id:").append(params.getSndStId());
-                            } else if ("RSV_ST_ID".equals(sqlCalcName) && params.getRsvStId() != null) {
-                                keyBuilder.append(":rsv_st_id:").append(params.getRsvStId());
-                            } else if ("SND_ORG_ID".equals(sqlCalcName) && params.getSndOrgId() != null) {
-                                keyBuilder.append(":snd_org_id:").append(params.getSndOrgId());
-                            } else if ("RSV_ORG_ID".equals(sqlCalcName) && params.getRsvOrgId() != null) {
-                                keyBuilder.append(":rsv_org_id:").append(params.getRsvOrgId());
-                            } else if ("FR_ID".equals(sqlCalcName) && params.getFrId() != null) {
-                                keyBuilder.append(":fr_id:").append(params.getFrId());
-                            } else if ("ROD_ID".equals(sqlCalcName) && params.getRodId() != null) {
-                                keyBuilder.append(":rod_id:").append(params.getRodId());
-                            } else if ("ROUTE_SEND_SIGN".equals(sqlCalcName) && params.getRouteSendSign() != null) {
-                                keyBuilder.append(":route_send_sign:").append(params.getRouteSendSign());
-                            } else if ("CLIENT_ID".equals(sqlCalcName) && params.getClientId() != null) {
-                                keyBuilder.append(":client_id:").append(params.getClientId());
-                            } else if ("VID_PODGOTOVKI".equals(sqlCalcName) && params.getVidPodgotovki() != null) {
-                                keyBuilder.append(":vid_podgotovki:").append(params.getVidPodgotovki());
-                            } else if ("VID_ZABRAKOVKI".equals(sqlCalcName) && params.getVidZabrakovki() != null) {
-                                keyBuilder.append(":vid_zabrakovki:").append(params.getVidZabrakovki());
-                            } else if ("IS_TECH_ST".equals(sqlCalcName) && params.getIsTechSt() != null) {
-                                keyBuilder.append(":is_tech_st:").append(params.getIsTechSt());
-                            } else if ("ISLOAD".equals(sqlCalcName) && params.getIsLoad() != null) {
-                                keyBuilder.append(":isload:").append(params.getIsLoad());
-                            } else if ("MODEL_PROPERTY_ID".equals(sqlCalcName) && params.getModelPropertyId() != null) {
-                                keyBuilder.append(":model_property_id:").append(params.getModelPropertyId());
-                            } else if ("ST_ID".equals(sqlCalcName) && params.getStIdDisl() != null) {
-                                keyBuilder.append(":st_id:").append(params.getStIdDisl());
+                            // Ключ построен
+                            key = keyBuilder.toString();
+                            keyBuilder.setLength(0); // set length of buffer to 0
+                            keyBuilder.trimToSize(); // trim the underlying buffer
+
+                            calcLvl = groupingSets.getLevel();
+
+                            if (logs) {
+                                log.debug("key={} on level:{}", key, calcLvl);
                             }
 
-                            if ((params.getId() == 3 ||
-                                params.getId() == 4 ||
-                                params.getId() == 6 ||
-                                params.getId() == 7 ||
-                                params.getId() == 15) && ("FR_GROUP_ID".equals(sqlCalcName) && params.getFrId() != null)) {
-                                Long frGrId = (Long) asyncCacheApi.get("freight:gr:" + params.getFrId()).toCompletableFuture().join();
-                                keyBuilder.append(":fr_group_id:").append(frGrId);
+                            // Проверяем json на полноту данных
+                            //if (logs) {
+                            //    log.debug(">> GETTING DURATION FROM CACHE <<");
+                            //}
+
+                            Object cachedObj = asyncCacheApi.get(key).toCompletableFuture().join();
+
+                            if (cachedObj == null) {
+                                duration = ABSENT_METRIX;
+                            } else {
+                                duration = (double) cachedObj;
                             }
+
+                            //if (logs) {
+                            //    log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
+                            //}
+
+                            if (duration > 0) {
+                                if (logs) {
+                                    log.debug(">> duration:{} found on level:{} <<", duration, calcLvl);
+                                }
+                                break;
+                            }
+
+                            //if (logs) {
+                            //  log.debug("grset {} row processed", groupingSetId);
+                            //}
+
+                        } // Прошли все уровни
+
+                        // TODO: ДОБАВИТЬ ВСЕ ПОЛЯ ИЗ ВХОДНОГО JSON
+                        BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
+                                .id(params.getId())
+                                .duration(String.format("%1$,.2f", duration))
+                                //.sndStId(params.getSndStId())
+                                //.rsvStId(params.getRsvStId())
+                                //.rodId(params.getRodId())
+                                //.routeSendSign(params.getRouteSendSign())
+                                .calcLevel(calcLvl)
+                                .build();
+
+                        if (duration == ABSENT_METRIX) {
+                            bdResponse.setDuration(String.format("%1$,.2f", ABSENT_METRIX));
+                            bdResponse.setException("duration is null! key=" + key);
                         }
 
-                        // Ключ построен
-                        key = keyBuilder.toString();
-                        keyBuilder.setLength(0); // set length of buffer to 0
-                        keyBuilder.trimToSize(); // trim the underlying buffer
-
-                        calcLvl = groupingSets.getLevel();
+                        responseList.add(bdResponse);
 
                         if (logs) {
-                            log.debug("key={} on level:{}", key, calcLvl);
+                            log.debug("json row processed");
                         }
-
-                        // Проверяем json на полноту данных
-                        //if (logs) {
-                        //    log.debug(">> GETTING DURATION FROM CACHE <<");
-                        //}
-
-                        Object cachedObj = asyncCacheApi.get(key).toCompletableFuture().join();
-
-                        if (cachedObj == null) {
-                            duration = ABSENT_METRIX;
-                        } else {
-                            duration = (double) cachedObj;
-                        }
-
-                        //if (logs) {
-                        //    log.debug(">> GETTING DURATION FROM CACHE DONE, duration:{} <<", duration);
-                        //}
-
-                        if (duration > 0) {
-                            if (logs) {
-                                log.debug(">> duration:{} found on level:{} <<", duration, calcLvl);
-                            }
-                            break;
-                        }
-
-                        //if (logs) {
-                        //  log.debug("grset {} row processed", groupingSetId);
-                        //}
-
-                    } // Прошли все уровни
-
-                    // TODO: ДОБАВИТЬ ВСЕ ПОЛЯ ИЗ ВХОДНОГО JSON
-                    BigDataQueryResponse bdResponse = BigDataQueryResponse.builder()
-                        .id(params.getId())
-                        .duration(String.format("%1$,.2f", duration))
-                        //.sndStId(params.getSndStId())
-                        //.rsvStId(params.getRsvStId())
-                        //.rodId(params.getRodId())
-                        //.routeSendSign(params.getRouteSendSign())
-                        .calcLevel(calcLvl)
-                        .build();
-
-                    if (duration == ABSENT_METRIX) {
-                        bdResponse.setDuration(String.format("%1$,.2f", ABSENT_METRIX));
-                        bdResponse.setException("duration is null! key=" + key);
                     }
 
-                    responseList.add(bdResponse);
-
-                    if (logs) {
-                        log.debug("json row processed");
-                    }
+                } catch (SQLException e) {
+                    log.error("getStatIndicators sql error:{} ", e.getMessage());
                 }
+                response.setMetrics(responseList);
 
-            } catch (SQLException e) {
-                log.error("getStatIndicators sql error:{} ", e.getMessage());
-            }
-            response.setMetrics(responseList);
-
-            if (logs) {
-                log.debug("<< getSiCalculationRedis < end, now:{}", now());
-            }
-            return response;
-        }, ec).thenApply(res -> ok(Json.toJson(response)));
-
+                if (logs) {
+                    log.debug("<< getSiCalculationRedis < end, now:{}", now());
+                }
+                return response;
+            }, ec).thenApply(res -> ok(Json.toJson(response)));
+        },15);
     }
 
     /**
